@@ -25,8 +25,22 @@ gulp.task('fileinclude', function (done) {
 	done()
 });
 // =========================================================================================================================
+const scss = require("gulp-sass")(require("sass"))
 
+gulp.task ("sass", function(done){
+	gulp
+	.src("./src/scss/*.scss")
+	.pipe(scss())
+	.pipe(gulp.dest("./dist/css"))
+	done()
+})
+// =========================================================================================================================
 
-
+gulp.task ("copy-files",function(done){
+	gulp
+	.src("./src/img/**/*")
+	.pipe(gulp.dest("./dist/img"))
+	done()
+})
 
 
