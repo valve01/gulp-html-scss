@@ -10,5 +10,8 @@
     "gulp-server-livereload": "^1.9.2",
     "gulp-sourcemaps": "^3.0.0",
     "sass": "^1.68.0"
+  },
+  "dependencies": {
+    "node": "^20.7.0"
   }
 }
