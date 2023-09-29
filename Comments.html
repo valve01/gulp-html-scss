@@ -26,7 +26,7 @@ gulpfile.js
 в нем будем писать таски
 ----------------------------------------------------------------------
 достаем gulp
-const gulp = require ('gulp')
+<!-- const gulp = require ('gulp') -->
 ----------------------------------------------------------------------
 
 пишем таски. 
@@ -39,12 +39,69 @@ const gulp = require ('gulp')
 2 - функция, которая будет запускаться при вызове этой таски
 
 
-gulp.task('hello', function () {
+<!-- gulp.task('hello', function () {
 	console.log('hello gulp');
-});
+}); -->
 
 для вызова таски в консоли пишем npx gulp hello (где hello - название таски (может быть любое))
-----------------------------------------------------------------------
+
+
+Чтобы подать сигнал о завершении работы такса галпу, нужно запустить колбэк фукцию, которую нужно передать в нашу исполняющую функцию, принято называть ее done()
+
+
+<!-- gulp.task('hello', function (done) {
+	console.log('hello gulp');
+	done()
+}); -->
+
+
+<!-- gulp.task('fuck', function (done) {
+	console.log('fuck you gulp');
+	done()
+}); -->
+
+Создаем таск, который будет запускаться по команде npx gulp (по умолчанию). Даем ему имя default.
+
+Он будет запускать серию тасков. Для этого используем его метод series и перечисляем уже прописанные где-то таски через , .
+
+<!-- 
+gulp.task("default", gulp.series("hello","fuck"))
+ -->
+
+Чтобы добавлять пакеты через require нужно указыать их имя как package-json
+
+
+----------------------------------------------------------------------gulp-file-include-------------------------------------------------
+
+
+Пишем таску для gulp-file-include. 
+
+1 Для этого в теле исполняемой функции вызываем gulp, в его метод src передаем путь (относительно gulpfile.js) к html файлам (или маску к группе файлов), в которые нужно заинклюдить другие файлы 
+
+2 В метод pipe передаем функцию из пакета gulp-file-include , которая собственно обрабатывает файлы. Она принимает в себя настройки  в виде объекта {
+	prefix: префикс типа строка, обозначающий, что сейчас будет написан include;
+	basepath: относительно чего будет указан путь к файлам, которые нужно заинклюдить
+
+	('@file': include file relative to the dir in which file resides (example)
+	'@root': include file relative to the dir in which gulp is running
+	path/to/dir: include file relative to the basepath you provide)
+
+	(подробнее)(https://www.npmjs.com/package/gulp-file-include)
+}
+
+3 Внутри pipe вызываем метод gulp.dest() и передаем в него путь к объединенным вновь созданным файлам.
+
+<!-- const fileInclude = require('gulp-file-include');
+
+const fileincludeSettings = { prefix: '@@', basepath: '@file' };
+
+gulp.task('fileinclude', function (done) {
+	gulp
+	.src('./src/*.html')
+	.pipe(fileInclude(fileincludeSettings))
+	.pipe(gulp.dest('./dist/'));
+	done()
+}); -->
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
