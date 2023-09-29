@@ -23,16 +23,13 @@ gulp.task('fileinclude', function () {
 // =========================================================================================================================
 const scss = require('gulp-sass')(require('sass'));
 
-gulp.task('sass', function () { 
+gulp.task('sass', function () {
 	return gulp.src('./src/scss/*.scss').pipe(scss()).pipe(gulp.dest('./dist/css'));
-
 });
 // =========================================================================================================================
 
 gulp.task('copy-files', function () {
-
 	return gulp.src('./src/img/**/*').pipe(gulp.dest('./dist/img'));
-
 });
 // =========================================================================================================================
 
@@ -47,3 +44,26 @@ gulp.task('startServer', function () {
 	);
 });
 // =========================================================================================================================
+
+const fs = require('fs');
+
+const clean = require('gulp-clean');
+
+gulp.task('clear', function (done) {
+	if (fs.existsSync('./dist/')) {
+		return gulp.src('./dist/', { read: false }).pipe(clean({ force: true }));
+	}
+	done();
+});
+// =========================================================================================================================
+
+gulp.task('watchHtml', function () {
+	gulp.watch('./src/**/*.html');
+});
+gulp.task('watchScss', function () {
+	gulp.watch('./src/csss/**/*.scss');
+});
+gulp.task('watchImg', function () {
+	gulp.watch('./scr/img/**/*');
+});
+// 49:27
