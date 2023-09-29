@@ -58,7 +58,8 @@ gulp.task('clear', function (done) {
 // =========================================================================================================================
 
 gulp.task('watch', function () {
+	gulp.watch('./src/scss/**/*.scss', gulp.parallel('sass'));
 	gulp.watch('./src/**/*.html', gulp.parallel('fileinclude'));
-	gulp.watch('./src/csss/**/*.scss', gulp.parallel('sass'));
-	gulp.watch('./scr/img/**/*', gulp.parallel('copy-files'));
+	gulp.watch('./src/img/**/*', gulp.parallel('copy-files'));
 });
+// =========================================================================================================================
