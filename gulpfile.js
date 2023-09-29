@@ -1,4 +1,11 @@
-const gulp = require('gulp');
-gulp.task('hi', function () {
-	console.log('hello');
-});
+// const gulp = require('gulp');
+
+// gulp.task("hello", function(){
+// 	console.log("hello gulp")
+// })
+
+function defaultTask(cb) {
+	console.log("hello")
+	cb();
+}
+exports.default = defaultTask;
