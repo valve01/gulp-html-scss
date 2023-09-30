@@ -63,3 +63,12 @@ gulp.task('watch', function () {
 	gulp.watch('./src/img/**/*', gulp.parallel('copy-files'));
 });
 // =========================================================================================================================
+
+gulp.task(
+	'default',
+	gulp.series(
+		'clear',
+		gulp.parallel('sass', 'fileinclude', 'copy-files'),
+		gulp.parallel('startServer', 'watch'),
+	),
+);
