@@ -22,9 +22,15 @@ gulp.task('fileinclude', function () {
 });
 // =========================================================================================================================
 const scss = require('gulp-sass')(require('sass'));
+const sourceMaps = require('gulp-sourcemaps');
 
 gulp.task('sass', function () {
-	return gulp.src('./src/scss/*.scss').pipe(scss()).pipe(gulp.dest('./dist/css'));
+	return gulp
+		.src('./src/scss/*.scss')
+		.pipe(sourceMaps.init())
+		.pipe(scss())
+		.pipe(sourceMaps.write())
+		.pipe(gulp.dest('./dist/css'));
 });
 // =========================================================================================================================
 
