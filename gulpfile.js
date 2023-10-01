@@ -14,24 +14,35 @@ const notify = require('gulp-notify');
 // });
 
 // gulp.task('default', gulp.series('hello', 'fuck'));
+// =========================================================================================================================
+
+const plumberConfig = (title) => {
+	return {
+		errorHandler: notify.onError({
+			title, // место откуда пришла ошибка
+			message: 'Error <%= error.message %>', // шаблон из документации notify
+			sound: false,
+		}),
+	};
+};
 
 // =========================================================================================================================
 const fileInclude = require('gulp-file-include');
 
 const fileincludeSettings = { prefix: '@@', basepath: '@file' };
 
-const plumberHtmlConfig = {
-	errorHandler: notify.onError({
-		title: 'Html', // место откуда пришла ошибка
-		message: 'Error <%= error.message %>', // шаблон из документации notify
-		sound: false,
-	}),
-};
+// const plumberHtmlConfig = {
+// 	errorHandler: notify.onError({
+// 		title: 'Html', // место откуда пришла ошибка
+// 		message: 'Error <%= error.message %>', // шаблон из документации notify
+// 		sound: false,
+// 	}),
+// };
 
 gulp.task('fileinclude', function () {
 	return gulp
 		.src('./src/*.html')
-		.pipe(plumber(plumberHtmlConfig))
+		.pipe(plumber(plumberConfig('Html')))
 		.pipe(fileInclude(fileincludeSettings))
 		.pipe(gulp.dest('./dist/'));
 });
@@ -40,19 +51,19 @@ const scss = require('gulp-sass')(require('sass'));
 const sourceMaps = require('gulp-sourcemaps');
 // const mediaQueries = require('gulp-group-css-media-queries');
 
-const plumberScssConfig = {
-	errorHandler: notify.onError({
-		title: 'Styles', // место откуда пришла ошибка
-		message: 'Error <%= error.message %>', // шаблон из документации notify
-		sound: false,
-	}),
-};
+// const plumberScssConfig = {
+// 	errorHandler: notify.onError({
+// 		title: 'Styles', // место откуда пришла ошибка
+// 		message: 'Error <%= error.message %>', // шаблон из документации notify
+// 		sound: false,
+// 	}),
+// };
 
 gulp.task('sass', function () {
 	return (
 		gulp
 			.src('./src/scss/*.scss')
-			.pipe(plumber(plumberScssConfig))
+			.pipe(plumber(plumberConfig('Styles')))
 			.pipe(sourceMaps.init())
 			.pipe(scss())
 			// .pipe(mediaQueries())
@@ -112,7 +123,7 @@ gulp.task(
 	'default',
 	gulp.series(
 		'clear',
-		gulp.parallel('sass', 'fileinclude', 'copy-images', 'copy-fonts',"copy-files"),
+		gulp.parallel('sass', 'fileinclude', 'copy-images', 'copy-fonts', 'copy-files'),
 		gulp.parallel('startServer', 'watch'),
 	),
 );
