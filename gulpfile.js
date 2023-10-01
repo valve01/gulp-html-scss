@@ -1,5 +1,8 @@
 const gulp = require('gulp');
 
+const plumber = require('gulp-plumber');
+const notify = require('gulp-notify');
+
 // gulp.task('hello', function (done) {
 // 	console.log('hello gulp');
 // 	done()
@@ -23,14 +26,27 @@ gulp.task('fileinclude', function () {
 // =========================================================================================================================
 const scss = require('gulp-sass')(require('sass'));
 const sourceMaps = require('gulp-sourcemaps');
+// const mediaQueries = require('gulp-group-css-media-queries');
+
+const plumberScssConfig = {
+	errorHandler: notify.onError({
+		title: 'Styles', // место откуда пришла ошибка
+		message: 'Error <%= error.message %>',// шаблон из документации notify
+		sound: false,
+	}),
+};
 
 gulp.task('sass', function () {
-	return gulp
-		.src('./src/scss/*.scss')
-		.pipe(sourceMaps.init())
-		.pipe(scss())
-		.pipe(sourceMaps.write())
-		.pipe(gulp.dest('./dist/css'));
+	return (
+		gulp
+			.src('./src/scss/*.scss')
+			.pipe(plumber(plumberScssConfig))
+			.pipe(sourceMaps.init())
+			.pipe(scss())
+			// .pipe(mediaQueries())
+			.pipe(sourceMaps.write())
+			.pipe(gulp.dest('./dist/css'))
+	);
 });
 // =========================================================================================================================
 
@@ -78,4 +94,6 @@ gulp.task(
 		gulp.parallel('startServer', 'watch'),
 	),
 );
+// =========================================================================================================================
+
 // =========================================================================================================================
