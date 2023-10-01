@@ -141,8 +141,6 @@ gulp.task ("sass", function(done){
 }) -->
 
 
-
-
 -------------------------------------------------------------------gulp-server-livereload ----------------------------------------------------------------------
 
 Лайвсервер для gulp
@@ -274,12 +272,67 @@ gulp.task('sass', function () {
  ------------------------------------------------------------------ gulp-plumber + gulp-notify -----------------------------------------------------------------
  gulp-plumber - позволяет избежать зависания приложения при ошибках
  gulp-notify - выдает ошибки во всплывающем окне, чтобы мы видели откуда они пришли, т.к. приложение будет работать и без gulp-notify можно подумать что ошибок нет
+ 
+ реквайрим plumber и notify
 
+ plumber вызываем после указания пути к исходным файлам и передаем в него объект с настройками , в свойство errorHandler записываем значение вызова функции notify.onError в которую в свою очередь передаем настройки уже для нее.
+<!-- 
+const plumber = require('gulp-plumber');
+const notify = require('gulp-notify');
 
+const plumberScssConfig = {
+	errorHandler: notify.onError({
+		title: 'Styles', // место откуда пришла ошибка
+		message: 'Error <%= error.message %>',// шаблон для текста ошибки (из документации notify)
+		sound: false, //отключение звукового оповещения
+	}),
+};
 
+gulp.task('sass', function () {
+	return (
+		gulp
+			.src('./src/scss/*.scss')
+			.pipe(plumber(plumberScssConfig))
+			.pipe(sourceMaps.init())
+			.pipe(scss())
+			// .pipe(mediaQueries())
+			.pipe(sourceMaps.write())
+			.pipe(gulp.dest('./dist/css'))
+	);
+});
+
+ -->
+
+То же самое можно сделать для других типов файлов
+
+ Например html:
+
+<!-- 
+	const plumberHtmlConfig = {
+	errorHandler: notify.onError({
+		title: 'Html', // место откуда пришла ошибка
+		message: 'Error <%= error.message %>',// шаблон из документации notify
+		sound: false,
+	}),
+};
+
+gulp.task('fileinclude', function () {
+	return gulp
+	.src('./src/*.html')
+	.pipe(plumber(plumberHtmlConfig))
+	.pipe(fileInclude(fileincludeSettings))
+	.pipe(gulp.dest('./dist/'));
+});
+ -->
 
  ------------------------------------------------------------------gulp-group-css-media-queries-----------------------------------------------------------------
- ------------------------------------------------------------------gulp-group-css-media-queries-----------------------------------------------------------------
+ 
+ Проект всегда передается без папки node_modules, а для того чтобы он заработал как надо на другом пк - вводится команда npm i , она берет все зависимости из package.json и потом скачивает и подключает все нужные пакеты сама. 
+
+ Чтобы папка не попадала в Git нужно добавить ее в gitignore
+ 
+ 
+ 
  ------------------------------------------------------------------gulp-group-css-media-queries-----------------------------------------------------------------
  ------------------------------------------------------------------gulp-group-css-media-queries-----------------------------------------------------------------
  ------------------------------------------------------------------gulp-group-css-media-queries-----------------------------------------------------------------

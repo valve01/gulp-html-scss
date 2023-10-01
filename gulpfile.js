@@ -20,8 +20,20 @@ const fileInclude = require('gulp-file-include');
 
 const fileincludeSettings = { prefix: '@@', basepath: '@file' };
 
+const plumberHtmlConfig = {
+	errorHandler: notify.onError({
+		title: 'Html', // место откуда пришла ошибка
+		message: 'Error <%= error.message %>', // шаблон из документации notify
+		sound: false,
+	}),
+};
+
 gulp.task('fileinclude', function () {
-	return gulp.src('./src/*.html').pipe(fileInclude(fileincludeSettings)).pipe(gulp.dest('./dist/'));
+	return gulp
+		.src('./src/*.html')
+		.pipe(plumber(plumberHtmlConfig))
+		.pipe(fileInclude(fileincludeSettings))
+		.pipe(gulp.dest('./dist/'));
 });
 // =========================================================================================================================
 const scss = require('gulp-sass')(require('sass'));
@@ -31,7 +43,7 @@ const sourceMaps = require('gulp-sourcemaps');
 const plumberScssConfig = {
 	errorHandler: notify.onError({
 		title: 'Styles', // место откуда пришла ошибка
-		message: 'Error <%= error.message %>',// шаблон из документации notify
+		message: 'Error <%= error.message %>', // шаблон из документации notify
 		sound: false,
 	}),
 };
@@ -50,8 +62,16 @@ gulp.task('sass', function () {
 });
 // =========================================================================================================================
 
-gulp.task('copy-files', function () {
+gulp.task('copy-images', function () {
 	return gulp.src('./src/img/**/*').pipe(gulp.dest('./dist/img'));
+});
+
+gulp.task('copy-fonts', function () {
+	return gulp.src('./src/fonts/**/*').pipe(gulp.dest('./dist/fonts'));
+});
+
+gulp.task('copy-files', function () {
+	return gulp.src('./src/files/**/*').pipe(gulp.dest('./dist/files'));
 });
 // =========================================================================================================================
 
@@ -82,7 +102,9 @@ gulp.task('clear', function (done) {
 gulp.task('watch', function () {
 	gulp.watch('./src/scss/**/*.scss', gulp.parallel('sass'));
 	gulp.watch('./src/**/*.html', gulp.parallel('fileinclude'));
-	gulp.watch('./src/img/**/*', gulp.parallel('copy-files'));
+	gulp.watch('./src/img/**/*', gulp.parallel('copy-images'));
+	gulp.watch('./src/fonts/**/*', gulp.parallel('copy-fonts'));
+	gulp.watch('./src/files/**/*', gulp.parallel('copy-files'));
 });
 // =========================================================================================================================
 
@@ -90,7 +112,7 @@ gulp.task(
 	'default',
 	gulp.series(
 		'clear',
-		gulp.parallel('sass', 'fileinclude', 'copy-files'),
+		gulp.parallel('sass', 'fileinclude', 'copy-images', 'copy-fonts',"copy-files"),
 		gulp.parallel('startServer', 'watch'),
 	),
 );
