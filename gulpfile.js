@@ -2,7 +2,8 @@ const gulp = require('gulp');
 
 const plumber = require('gulp-plumber');
 const notify = require('gulp-notify');
-
+const webpack = require('webpack-stream');
+const babel = require("gulp-babel")
 // gulp.task('hello', function (done) {
 // 	console.log('hello gulp');
 // 	done()
@@ -86,6 +87,17 @@ gulp.task('copy-files', function () {
 });
 // =========================================================================================================================
 
+gulp.task('js', function () {
+	return gulp
+		.src('./js/*.js')
+		.pipe(plumber(plumberConfig('JS')))
+		.pipe(babel())
+		.pipe(webpack(require('./webpack.config.js')))
+		.pipe(gulp.dest('./dist/js'));
+});
+
+// =========================================================================================================================
+
 const server = require('gulp-server-livereload');
 
 gulp.task('startServer', function () {
@@ -116,6 +128,7 @@ gulp.task('watch', function () {
 	gulp.watch('./src/img/**/*', gulp.parallel('copy-images'));
 	gulp.watch('./src/fonts/**/*', gulp.parallel('copy-fonts'));
 	gulp.watch('./src/files/**/*', gulp.parallel('copy-files'));
+	gulp.watch('./src/js/**/*.js', gulp.parallel('js'));
 });
 // =========================================================================================================================
 
@@ -123,7 +136,7 @@ gulp.task(
 	'default',
 	gulp.series(
 		'clear',
-		gulp.parallel('sass', 'fileinclude', 'copy-images', 'copy-fonts', 'copy-files'),
+		gulp.parallel('sass', 'fileinclude', 'copy-images', 'copy-fonts', 'copy-files', 'js'),
 		gulp.parallel('startServer', 'watch'),
 	),
 );

@@ -325,7 +325,7 @@ gulp.task('fileinclude', function () {
 });
  -->
 
- ------------------------------------------------------------------gulp-group-css-media-queries-----------------------------------------------------------------
+ ------------------------------------------------------------------gitignore-----------------------------------------------------------------
  
  Проект всегда передается без папки node_modules, а для того чтобы он заработал как надо на другом пк - вводится команда npm i , она берет все зависимости из package.json и потом скачивает и подключает все нужные пакеты сама. 
 
@@ -336,28 +336,58 @@ gulp.task('fileinclude', function () {
  3. Все! Эта папка не будет теперь попадать в Git
  
  
- 
- ------------------------------------------------------------------gulp-group-css-media-queries-----------------------------------------------------------------
- ------------------------------------------------------------------gulp-group-css-media-queries-----------------------------------------------------------------
- ------------------------------------------------------------------gulp-group-css-media-queries-----------------------------------------------------------------
- ------------------------------------------------------------------gulp-group-css-media-queries-----------------------------------------------------------------
+ ----------------------------------------------------------------------webpack----------------------------------------------------------------------
 
-Сборка скриптов. webpack, babel
-
-Установка babel:
-npm i gulp-babel @babel/core @babel/preset-env
-
-- JS таск
-- Настройки package-json
-
-----------------------------------------------------------------------
-
-Установка webpack:
+Установка webpack+лоадеры:
 npm i webpack-stream style-loader css-loader --save-dev
+
 
 - JS таск
 - webpack конфиг
 - пример файлов с модулями
+
+подключение
+<!-- const webpack = require('webpack-stream'); -->
+
+- JS таск
+<!-- 
+
+gulp.task('js', function () {
+	return gulp
+		.src('./js/*.js')
+		.pipe(plumber(plumberConfig('JS')))
+		.pipe(webpack(require('./webpack.config.js')))
+		.pipe(gulp.dest('./dist/js'));
+});
+
+ -->
+ - webpack конфиг
+<!-- 
+	const config = {
+	mode: 'production',
+	entry: {
+		index: './src/js/index.js',
+		// contacts: './src/js/contacts.js',
+	},
+	output: {
+		filename: '[name].bundle.js',
+	},
+	module: {
+		rules: [
+			{
+				test: /\.css$/,
+				use: ['style-loader', 'css-loader'],
+			},
+		],
+	},
+};
+
+module.exports = config;
+
+ -->
+ !ВАЖНО! Указываем теперь в index.html в пути к скриптам - index.bundle.js, т.к. согласно конфигу вебпака файл будет называться именно так.
+
+ ----------------------------------------------------------------------webpack----------------------------------------------------------------------
 
 Пример с datepicker:
 npm i air-datepicker -S
@@ -373,6 +403,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
 HTML:
 <!-- <input type="text" id="my-element"> -->
+ --------------------------------------------------------Сборка скриптов. webpack, babel----------------------------------------------------------------------
+
+Сборка скриптов. webpack, babel
+
+Установка babel:
+npm i gulp-babel @babel/core @babel/preset-env --save-dev
+
+
+
+- JS таск
+- Настройки package-json
+
+
+Подключаем babel после plumber
+
+<!-- 
+	gulp.task('js', function () {
+	return gulp
+		.src('./js/*.js')
+		.pipe(plumber(plumberConfig('JS')))
+		.pipe(babel())
+		.pipe(webpack(require('./webpack.config.js')))
+		.pipe(gulp.dest('./dist/js'));
+});
+ -->
 
 ----------------------------------------------------------------------
 
@@ -386,7 +441,7 @@ npm i gulp-imagemin@7 --save-dev
 
 Ускорение сборки
 
-npm install --save-dev gulp-changed
+npm i gulp-changed --save-dev
 
 - использование в картинках, HTML, JS, CSS
 
