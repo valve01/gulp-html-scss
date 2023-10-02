@@ -3,7 +3,8 @@ const gulp = require('gulp');
 const plumber = require('gulp-plumber');
 const notify = require('gulp-notify');
 const webpack = require('webpack-stream');
-const babel = require("gulp-babel")
+const babel = require('gulp-babel');
+const imagemin = require('gulp-imagemin');
 // gulp.task('hello', function (done) {
 // 	console.log('hello gulp');
 // 	done()
@@ -75,7 +76,10 @@ gulp.task('sass', function () {
 // =========================================================================================================================
 
 gulp.task('copy-images', function () {
-	return gulp.src('./src/img/**/*').pipe(gulp.dest('./dist/img'));
+	return gulp
+		.src('./src/img/**/*')
+		.pipe(imagemin({ verbose: true }))// настройка включает отображение в консоли какие файлы были оптимизированы и сколько места сэкономлено
+		.pipe(gulp.dest('./dist/img'));
 });
 
 gulp.task('copy-fonts', function () {
