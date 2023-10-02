@@ -5,6 +5,7 @@ const notify = require('gulp-notify');
 const webpack = require('webpack-stream');
 const babel = require('gulp-babel');
 const imagemin = require('gulp-imagemin');
+const changed = require('gulp-changed');
 // gulp.task('hello', function (done) {
 // 	console.log('hello gulp');
 // 	done()
@@ -44,6 +45,7 @@ const fileincludeSettings = { prefix: '@@', basepath: '@file' };
 gulp.task('fileinclude', function () {
 	return gulp
 		.src('./src/*.html')
+		.pipe(changed('./dist/'))
 		.pipe(plumber(plumberConfig('Html')))
 		.pipe(fileInclude(fileincludeSettings))
 		.pipe(gulp.dest('./dist/'));
@@ -65,12 +67,13 @@ gulp.task('sass', function () {
 	return (
 		gulp
 			.src('./src/scss/*.scss')
+			.pipe(changed('./dist/css/'))
 			.pipe(plumber(plumberConfig('Styles')))
 			.pipe(sourceMaps.init())
 			.pipe(scss())
 			// .pipe(mediaQueries())
 			.pipe(sourceMaps.write())
-			.pipe(gulp.dest('./dist/css'))
+			.pipe(gulp.dest('./dist/css/'))
 	);
 });
 // =========================================================================================================================
@@ -78,22 +81,24 @@ gulp.task('sass', function () {
 gulp.task('copy-images', function () {
 	return gulp
 		.src('./src/img/**/*')
-		.pipe(imagemin({ verbose: true }))// настройка включает отображение в консоли какие файлы были оптимизированы и сколько места сэкономлено
-		.pipe(gulp.dest('./dist/img'));
+		.pipe(changed('./dist/img/'))
+		.pipe(imagemin({ verbose: true })) // настройка включает отображение в консоли какие файлы были оптимизированы и сколько места сэкономлено
+		.pipe(gulp.dest('./dist/img/'));
 });
 
 gulp.task('copy-fonts', function () {
-	return gulp.src('./src/fonts/**/*').pipe(gulp.dest('./dist/fonts'));
+	return gulp.src('./src/fonts/**/*').pipe(changed('./dist/fonts')).pipe(gulp.dest('./dist/fonts'));
 });
 
 gulp.task('copy-files', function () {
-	return gulp.src('./src/files/**/*').pipe(gulp.dest('./dist/files'));
+	return gulp.src('./src/files/**/*').pipe(changed('./dist/files')).pipe(gulp.dest('./dist/files'));
 });
 // =========================================================================================================================
 
 gulp.task('js', function () {
 	return gulp
 		.src('./js/*.js')
+		.pipe(changed('./dist/js'))
 		.pipe(plumber(plumberConfig('JS')))
 		.pipe(babel())
 		.pipe(webpack(require('./webpack.config.js')))
