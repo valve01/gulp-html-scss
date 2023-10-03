@@ -382,6 +382,63 @@ npm i gulp-changed --save-dev - использование в картинках
  -->
 
  используем его в картинках, HTML, JS, CSS, шрифтах, файлах
+ --------------------------------------------------------- пути, исключение путей, разные директории для путей----------------------------------------------
 
----------------------------------------------------------------------- web-p npm i gulp-webp
+
+Если мы собираем в какую-то папку файлы из разных директорий - указываем к ним путь в виде массива путей
+Если мы хотим исключить какую-то директорию из попадания в dist внутри кавычек перед путем ставим ! 
+
+<!-- 
+			.src(['./src/html/**/*.html','!./src/html/blocks/*.html'])
+ -->
+
+<!-- 
+	gulp.task('fileinclude', function () {
+	return gulp
+		.src(['./src/html/**/*.html','!./src/html/blocks/*.html'])
+		.pipe(changed('./dist/'))
+		.pipe(plumber(plumberConfig('Html')))
+		.pipe(fileInclude(fileincludeSettings))
+		.pipe(gulp.dest('./dist/'));
+});
+ -->
+
+ ---------------------------------------------------------------------gulp-sass-glob---------------------------------------------------------------------
+
+ gulp-sass-glob дает возможноть использовать глобальные импорыты (это те, которые с ** или * в пути), без него они не работают. 
+
+ !ВАЖНО! Не считывает импорты внутри импортированных файлов.
+ Поэтому все импорты далаем только в главном файле (например main.scss)
+
+ Теперь мы можем создавать в папке blocks новые scss файлы и они будут подключаться автоматически в main
+
+В main.scss теперь
+<!-- 
+	@import "./blocks/**/*.scss";
+ -->
+gulpfile.js
+<!-- 
+
+const sassGlob = require('gulp-sass-glob');
+
+gulp.task('sass', function () {
+	return (
+		gulp
+			.src('./src/scss/*.scss')
+			.pipe(changed('./dist/css/'))
+			.pipe(plumber(plumberConfig('Styles')))
+			.pipe(sourceMaps.init())
+			.pipe(sassGlob())
+			.pipe(scss())
+			// .pipe(mediaQueries())
+			.pipe(sourceMaps.write())
+			.pipe(gulp.dest('./dist/css/'))
+	);
+});
+ -->
+
+----------------------------------------------------------------------gulp-webp-------------------------------------------------------------
+
+web-p npm i gulp-webp
+
 gulp-webp-html gulp-webp-css --save-dev

@@ -6,6 +6,7 @@ const webpack = require('webpack-stream');
 const babel = require('gulp-babel');
 const imagemin = require('gulp-imagemin');
 const changed = require('gulp-changed');
+const sassGlob = require('gulp-sass-glob');
 // gulp.task('hello', function (done) {
 // 	console.log('hello gulp');
 // 	done()
@@ -44,7 +45,7 @@ const fileincludeSettings = { prefix: '@@', basepath: '@file' };
 
 gulp.task('fileinclude', function () {
 	return gulp
-		.src('./src/*.html')
+		.src(['./src/html/**/*.html','!./src/html/blocks/*.html'])
 		.pipe(changed('./dist/'))
 		.pipe(plumber(plumberConfig('Html')))
 		.pipe(fileInclude(fileincludeSettings))
@@ -70,6 +71,7 @@ gulp.task('sass', function () {
 			.pipe(changed('./dist/css/'))
 			.pipe(plumber(plumberConfig('Styles')))
 			.pipe(sourceMaps.init())
+			.pipe(sassGlob())
 			.pipe(scss())
 			// .pipe(mediaQueries())
 			.pipe(sourceMaps.write())
