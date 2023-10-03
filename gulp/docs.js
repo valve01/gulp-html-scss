@@ -3,28 +3,18 @@ const gulp = require('gulp');
 const plumber = require('gulp-plumber');
 const notify = require('gulp-notify');
 const webpack = require('webpack-stream');
-// const babel = require('gulp-babel');
-// const imagemin = require('gulp-imagemin');
+const babel = require('gulp-babel');
+const imagemin = require('gulp-imagemin');
 const changed = require('gulp-changed');
 const sassGlob = require('gulp-sass-glob');
-// gulp.task('hello', function (done) {
-// 	console.log('hello gulp');
-// 	done()
-// });
 
-// gulp.task('fuck', function (done) {
-// 	console.log('fuck you gulp');
-// 	done()
-// });
-
-// gulp.task('default', gulp.series('hello', 'fuck'));
 // =========================================================================================================================
 
 const plumberConfig = (title) => {
 	return {
 		errorHandler: notify.onError({
-			title, // место откуда пришла ошибка
-			message: 'Error <%= error.message %>', // шаблон из документации notify
+			title, 
+			message: 'Error <%= error.message %>', 
 			sound: false,
 		}),
 	};
@@ -35,13 +25,6 @@ const htmlInclude = require('gulp-file-include');
 
 const htmlIncludeSettings = { prefix: '@@', basepath: '@file' };
 
-// const plumberHtmlConfig = {
-// 	errorHandler: notify.onError({
-// 		title: 'Html', // место откуда пришла ошибка
-// 		message: 'Error <%= error.message %>', // шаблон из документации notify
-// 		sound: false,
-// 	}),
-// };
 
 gulp.task('htmlInclude:dev', function () {
 	return gulp
@@ -54,7 +37,15 @@ gulp.task('htmlInclude:dev', function () {
 // =========================================================================================================================
 const scss = require('gulp-sass')(require('sass'));
 const sourceMaps = require('gulp-sourcemaps');
+// const mediaQueries = require('gulp-group-css-media-queries');
 
+// const plumberScssConfig = {
+// 	errorHandler: notify.onError({
+// 		title: 'Styles', // место откуда пришла ошибка
+// 		message: 'Error <%= error.message %>', // шаблон из документации notify
+// 		sound: false,
+// 	}),
+// };
 
 gulp.task('sass:dev', function () {
 	return (
@@ -65,6 +56,7 @@ gulp.task('sass:dev', function () {
 			.pipe(sourceMaps.init())
 			.pipe(sassGlob())
 			.pipe(scss())
+			// .pipe(mediaQueries())
 			.pipe(sourceMaps.write())
 			.pipe(gulp.dest('./build/css/'))
 	);
@@ -75,7 +67,7 @@ gulp.task('copy-images:dev', function () {
 	return gulp
 		.src('./src/img/**/*')
 		.pipe(changed('./build/img/'))
-		// .pipe(imagemin({ verbose: true })) // настройка включает отображение в консоли какие файлы были оптимизированы и сколько места сэкономлено
+		.pipe(imagemin({ verbose: true })) 
 		.pipe(gulp.dest('./build/img/'));
 });
 
@@ -93,7 +85,7 @@ gulp.task('js:dev', function () {
 		.src('./js/*.js')
 		.pipe(changed('./build/js'))
 		.pipe(plumber(plumberConfig('JS')))
-		// .pipe(babel())
+		.pipe(babel())
 		.pipe(webpack(require('./../webpack.config.js')))
 		.pipe(gulp.dest('./build/js'));
 });
