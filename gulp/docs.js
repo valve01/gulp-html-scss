@@ -7,14 +7,14 @@ const babel = require('gulp-babel');
 const imagemin = require('gulp-imagemin');
 const changed = require('gulp-changed');
 const sassGlob = require('gulp-sass-glob');
-
+const autoprefixer = require('gulp-autoprefixer');
 // =========================================================================================================================
 
 const plumberConfig = (title) => {
 	return {
 		errorHandler: notify.onError({
-			title, 
-			message: 'Error <%= error.message %>', 
+			title,
+			message: 'Error <%= error.message %>',
 			sound: false,
 		}),
 	};
@@ -25,14 +25,13 @@ const htmlInclude = require('gulp-file-include');
 
 const htmlIncludeSettings = { prefix: '@@', basepath: '@file' };
 
-
-gulp.task('htmlInclude:dev', function () {
+gulp.task('htmlInclude:docs', function () {
 	return gulp
-		.src(['./src/html/**/*.html','!./src/html/blocks/*.html'])
-		.pipe(changed('./build/'))
+		.src(['./src/html/**/*.html', '!./src/html/blocks/*.html'])
+		.pipe(changed('./docs/'))
 		.pipe(plumber(plumberConfig('Html')))
 		.pipe(htmlInclude(htmlIncludeSettings))
-		.pipe(gulp.dest('./build/'));
+		.pipe(gulp.dest('./docs/'));
 });
 // =========================================================================================================================
 const scss = require('gulp-sass')(require('sass'));
@@ -47,55 +46,58 @@ const sourceMaps = require('gulp-sourcemaps');
 // 	}),
 // };
 
-gulp.task('sass:dev', function () {
+gulp.task('sass:docs', function () {
 	return (
 		gulp
 			.src('./src/scss/*.scss')
-			.pipe(changed('./build/css/'))
+			.pipe(changed('./docs/css/'))
 			.pipe(plumber(plumberConfig('Styles')))
 			.pipe(sourceMaps.init())
 			.pipe(sassGlob())
 			.pipe(scss())
+			.pipe(autoprefixer())// не срабатывет не может прочитать нужен postcss-scss parser (такая ошибка вылазит если будет комментарий в scss)
 			// .pipe(mediaQueries())
 			.pipe(sourceMaps.write())
-			.pipe(gulp.dest('./build/css/'))
+			.pipe(gulp.dest('./docs/css/'))
 	);
 });
+
+
 // =========================================================================================================================
 
-gulp.task('copy-images:dev', function () {
+gulp.task('copy-images:docs', function () {
 	return gulp
 		.src('./src/img/**/*')
-		.pipe(changed('./build/img/'))
-		.pipe(imagemin({ verbose: true })) 
-		.pipe(gulp.dest('./build/img/'));
+		.pipe(changed('./docs/img/'))
+		.pipe(imagemin({ verbose: true }))
+		.pipe(gulp.dest('./docs/img/'));
 });
 
-gulp.task('copy-fonts:dev', function () {
-	return gulp.src('./src/fonts/**/*').pipe(changed('./build/fonts')).pipe(gulp.dest('./build/fonts'));
+gulp.task('copy-fonts:docs', function () {
+	return gulp.src('./src/fonts/**/*').pipe(changed('./docs/fonts')).pipe(gulp.dest('./docs/fonts'));
 });
 
-gulp.task('copy-files:dev', function () {
-	return gulp.src('./src/files/**/*').pipe(changed('./build/files')).pipe(gulp.dest('./build/files'));
+gulp.task('copy-files:docs', function () {
+	return gulp.src('./src/files/**/*').pipe(changed('./docs/files')).pipe(gulp.dest('./docs/files'));
 });
 // =========================================================================================================================
 
-gulp.task('js:dev', function () {
+gulp.task('js:docs', function () {
 	return gulp
 		.src('./js/*.js')
-		.pipe(changed('./build/js'))
+		.pipe(changed('./docs/js'))
 		.pipe(plumber(plumberConfig('JS')))
 		.pipe(babel())
 		.pipe(webpack(require('./../webpack.config.js')))
-		.pipe(gulp.dest('./build/js'));
+		.pipe(gulp.dest('./docs/js'));
 });
 
 // =========================================================================================================================
 
 const server = require('gulp-server-livereload');
 
-gulp.task('startServer:dev', function () {
-	return gulp.src('./build/').pipe(
+gulp.task('startServer:docs', function () {
+	return gulp.src('./docs/').pipe(
 		server({
 			livereload: true,
 			open: true,
@@ -108,24 +110,15 @@ const fs = require('fs');
 
 const clean = require('gulp-clean');
 
-gulp.task('clear:dev', function (done) {
-	if (fs.existsSync('./build/')) {
-		return gulp.src('./build/', { read: false }).pipe(clean({ force: true }));
+gulp.task('clear:docs', function (done) {
+	if (fs.existsSync('./docs/')) {
+		return gulp.src('./docs/', { read: false }).pipe(clean({ force: true }));
 	}
 	done();
 });
 // =========================================================================================================================
 
-gulp.task('watch:dev', function () {
-	gulp.watch('./src/scss/**/*.scss', gulp.parallel('sass:dev'));
-	gulp.watch('./src/**/*.html', gulp.parallel('htmlInclude:dev'));
-	gulp.watch('./src/img/**/*', gulp.parallel('copy-images:dev'));
-	gulp.watch('./src/fonts/**/*', gulp.parallel('copy-fonts:dev'));
-	gulp.watch('./src/files/**/*', gulp.parallel('copy-files:dev'));
-	gulp.watch('./src/js/**/*.js', gulp.parallel('js:dev'));
-});
 // =========================================================================================================================
-
 
 // =========================================================================================================================
 
