@@ -12,6 +12,7 @@ const csso = require('gulp-csso');
 const htmlClean = require('gulp-htmlclean');
 const webp = require('gulp-webp');
 const webpHtml = require('gulp-webp-html');
+const webpCss = require('gulp-webp-css');
 // =========================================================================================================================
 
 const plumberConfig = (title) => {
@@ -61,6 +62,7 @@ gulp.task('sass:docs', function () {
 			.pipe(sourceMaps.init())
 			.pipe(autoprefixer()) // не срабатывет не может прочитать нужен postcss-scss parser (такая ошибка вылазит если будет комментарий в scss)
 			.pipe(sassGlob())
+			.pipe(webpCss())
 			.pipe(scss())
 			.pipe(csso())
 			// .pipe(mediaQueries())

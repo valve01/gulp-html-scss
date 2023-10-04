@@ -46,7 +46,7 @@ const htmlIncludeSettings = { prefix: '@@', basepath: '@file' };
 gulp.task('htmlInclude:dev', function () {
 	return gulp
 		.src(['./src/html/**/*.html','!./src/html/blocks/*.html'])
-		.pipe(changed('./build/'))
+		.pipe(changed('./build/', { hasChanged: changed.compareContents }))// Настройка нужна, чтобы при изменении файлов, подключенных к index.html сам index.html также пересобирался
 		.pipe(plumber(plumberConfig('Html')))
 		.pipe(htmlInclude(htmlIncludeSettings))
 		.pipe(gulp.dest('./build/'));
