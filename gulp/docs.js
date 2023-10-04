@@ -8,6 +8,10 @@ const imagemin = require('gulp-imagemin');
 const changed = require('gulp-changed');
 const sassGlob = require('gulp-sass-glob');
 const autoprefixer = require('gulp-autoprefixer');
+const csso = require('gulp-csso');
+const htmlClean = require('gulp-htmlclean');
+const webp = require('gulp-webp');
+const webpHtml = require('gulp-webp-html');
 // =========================================================================================================================
 
 const plumberConfig = (title) => {
@@ -31,6 +35,8 @@ gulp.task('htmlInclude:docs', function () {
 		.pipe(changed('./docs/'))
 		.pipe(plumber(plumberConfig('Html')))
 		.pipe(htmlInclude(htmlIncludeSettings))
+		.pipe(webpHtml())
+		.pipe(htmlClean())
 		.pipe(gulp.dest('./docs/'));
 });
 // =========================================================================================================================
@@ -53,21 +59,26 @@ gulp.task('sass:docs', function () {
 			.pipe(changed('./docs/css/'))
 			.pipe(plumber(plumberConfig('Styles')))
 			.pipe(sourceMaps.init())
+			.pipe(autoprefixer()) // не срабатывет не может прочитать нужен postcss-scss parser (такая ошибка вылазит если будет комментарий в scss)
 			.pipe(sassGlob())
 			.pipe(scss())
-			.pipe(autoprefixer())// не срабатывет не может прочитать нужен postcss-scss parser (такая ошибка вылазит если будет комментарий в scss)
+			.pipe(csso())
 			// .pipe(mediaQueries())
 			.pipe(sourceMaps.write())
 			.pipe(gulp.dest('./docs/css/'))
 	);
 });
 
-
 // =========================================================================================================================
 
 gulp.task('copy-images:docs', function () {
 	return gulp
 		.src('./src/img/**/*')
+		.pipe(changed('./docs/img/'))
+		.pipe(webp())
+		.pipe(gulp.dest('./docs/img/'))
+
+		.pipe(gulp.src('./src/img/**/*'))
 		.pipe(changed('./docs/img/'))
 		.pipe(imagemin({ verbose: true }))
 		.pipe(gulp.dest('./docs/img/'));

@@ -461,8 +461,114 @@ gulp.task('sass:docs', function () {
 	);
 });
  -->
+ Чтобы передать в autoprefixer браузеры, в которых нужно осуществлять поддерку, можно передать объект в autoprefixer(), но лучше в package-json добавить настройку browserslist, подробнее на gulp-autoprefixer npm
+<!-- 
+		"browserslist": [
+		"last 10 version"
+	]
+ -->
 
+ ---------------------------------------------------------------------- gulp-csso ----------------------------------------------------------------------
+npm i -D gulp-csso
+
+Минификатор css файлов
+
+Вызываем его в таске sass, после срабатывания gulp-sass
+<!-- 
+const scss = require('gulp-sass')(require('sass'));
+const sourceMaps = require('gulp-sourcemaps');
+
+	gulp.task('sass:docs', function () {
+	return (
+		gulp
+			.src('./src/scss/*.scss')
+			.pipe(changed('./docs/css/'))
+			.pipe(plumber(plumberConfig('Styles')))
+			.pipe(sourceMaps.init())
+			.pipe(autoprefixer()) // не срабатывет не может прочитать нужен postcss-scss parser (такая ошибка вылазит если будет комментарий в scss)
+			.pipe(sassGlob())
+			.pipe(scss())
+			.pipe(csso())
+			// .pipe(mediaQueries())
+			.pipe(sourceMaps.write())
+			.pipe(gulp.dest('./docs/css/'))
+	);
+});
+ -->
+
+ ----------------------------------------------------------------------gulp-htmlclean-------------------------------------------------------------
+npm i -D gulp-htmlclean
+Минификатор для Html файлов
+вызывается перед 		
+
+.pipe(gulp.dest('./docs/'));
+
+<!-- 
+	const htmlInclude = require('gulp-file-include');
+
+const htmlIncludeSettings = { prefix: '@@', basepath: '@file' };
+
+gulp.task('htmlInclude:docs', function () {
+	return gulp
+		.src(['./src/html/**/*.html', '!./src/html/blocks/*.html'])
+		.pipe(changed('./docs/'))
+		.pipe(plumber(plumberConfig('Html')))
+		.pipe(htmlInclude(htmlIncludeSettings))
+		.pipe(htmlClean())
+		.pipe(gulp.dest('./docs/'));
+});
+ -->
+
+ потребуется удалить старые html файлы в docs, иначе новые могут не заменят старые, но если мы вызываем все таски, мы итак docs удаляем
 ----------------------------------------------------------------------gulp-webp-------------------------------------------------------------
-web-p npm i gulp-webp gulp-webp-html gulp-webp-css --save-dev
-============================================================== npm i -D autoprefixer gulp-postcss
-npm i -D gulp-postcss
+npm i gulp-webp gulp-webp-html gulp-webp-css --save-dev
+
+gulp-webp - конвертирует изображения в .webp формат
+
+Мы сделали, чтобы у нас в docs/img попадали изображения в исходном + webp форматах
+
+Получается так: 
+мы даем доступ к исходным файлам
+проверяем их на изменения (ищем среди них те, которых нет в docs/img)
+Эти новые изображения конвертируем в формат webp
+засовываем новые изображения в docs/img
+
+Отдельно выполняется задача по ужиманию исходных изображений (старая задача)
+но нельзя 2 раза прописать 		.src('./src/img/**/*'), для таких случаев используют
+.pipe(gulp.src('./src/img/**/*'))\
+
+<!-- 
+	gulp.task('copy-images:docs', function () {
+	return gulp
+		.src('./src/img/**/*')
+		.pipe(changed('./docs/img/'))
+		.pipe(webp())
+		.pipe(gulp.dest('./docs/img/'))
+
+		.pipe(gulp.src('./src/img/**/*'))
+		.pipe(changed('./docs/img/'))
+		.pipe(imagemin({ verbose: true }))
+		.pipe(gulp.dest('./docs/img/'));
+});
+ -->
+
+ у gulp-webp есть еще разные настройки, в том числе выбор качетва.
+
+ ----------------------------------------------------------gulp-webp-html----------------------------------------------------------
+
+ В названиях имен картинок не должно быть пробелов. А расширение должно быть с маленькой буквы.
+ Тег img должен быть прописан в 1 строчку, иначе gulp-webp-html не может его считать, чтобы автоматом подключить
+
+ Вызываем его в таске htmlInclude:docs после работы htmlInclude
+<!-- 
+	gulp.task('htmlInclude:docs', function () {
+	return gulp
+		.src(['./src/html/**/*.html', '!./src/html/blocks/*.html'])
+		.pipe(changed('./docs/'))
+		.pipe(plumber(plumberConfig('Html')))
+		.pipe(htmlInclude(htmlIncludeSettings))
+		.pipe(webpHtml())
+		.pipe(htmlClean())
+		.pipe(gulp.dest('./docs/'));
+});
+ -->
