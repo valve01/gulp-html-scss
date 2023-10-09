@@ -93,7 +93,7 @@ gulp.task('js:dev', function () {
 		.src('./js/*.js')
 		.pipe(changed('./build/js'))
 		.pipe(plumber(plumberConfig('JS')))
-		// .pipe(babel())
+		// .pipe(babel())//выключен в dev режиме
 		.pipe(webpack(require('./../webpack.config.js')))
 		.pipe(gulp.dest('./build/js'));
 });
