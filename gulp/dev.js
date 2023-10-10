@@ -1,5 +1,5 @@
 const { src, dest, watch } = require('gulp');
-const gulp = require('gulp');
+
 //HTML
 const htmlInclude = require('gulp-file-include');
 
@@ -35,7 +35,14 @@ const plumberConfig = (title) => {
 };
 
 // ============================================================ Tasks ================================================================
+// ============================================================ Clean ===============================================================
 
+function clearDev() {
+	if (fs.existsSync('./build/')) {
+		return src('./build/', { read: false }).pipe(clean({ force: true }));
+	}
+}
+exports.clearDev = clearDev;
 // ============================================================= HTML ================================================================
 
 function htmlIncludeDev() {
@@ -104,14 +111,7 @@ function startServerDev() {
 	);
 }
 exports.startServerDev = startServerDev;
-// ========================================================== Clean ===============================================================
 
-function clearDev() {
-	if (fs.existsSync('./build/')) {
-		return src('./build/', { read: false }).pipe(clean({ force: true }));
-	}
-}
-exports.clearDev = clearDev;
 // ========================================================= Watch =======================================================================
 
 function watchDev() {

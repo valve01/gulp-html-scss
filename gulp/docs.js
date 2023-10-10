@@ -1,62 +1,77 @@
 const gulp = require('gulp');
 
-const plumber = require('gulp-plumber');
+const { src, dest } = require('gulp');
+
+//HTML
+const htmlInclude = require('gulp-file-include');
+const htmlClean = require('gulp-htmlclean');
+const webpHtml = require('gulp-webp-html');
+
+//SCSS
+const sassGlob = require('gulp-sass-glob');
+const scss = require('gulp-sass')(require('sass'));
+const sourceMaps = require('gulp-sourcemaps');
+const autoprefixer = require('gulp-autoprefixer');
+const csso = require('gulp-csso');
+const webpCss = require('gulp-webp-css');
+
+//JS
 const notify = require('gulp-notify');
 const webpack = require('webpack-stream');
 const babel = require('gulp-babel');
-const imagemin = require('gulp-imagemin');
-const changed = require('gulp-changed');
-const sassGlob = require('gulp-sass-glob');
-const autoprefixer = require('gulp-autoprefixer');
-const csso = require('gulp-csso');
-const htmlClean = require('gulp-htmlclean');
+
+//Images
 const webp = require('gulp-webp');
-const webpHtml = require('gulp-webp-html');
-const webpCss = require('gulp-webp-css');
-// =========================================================================================================================
+const imagemin = require('gulp-imagemin');
+
+// const mediaQueries = require('gulp-group-css-media-queries');
+const fs = require('fs');
+const clean = require('gulp-clean');
+const plumber = require('gulp-plumber');
+const changed = require('gulp-changed');
+const server = require('gulp-server-livereload');
+
+// =============================================================== Const =====================================================================
+
+const htmlIncludeSettings = { prefix: '@@', basepath: '@file' };
 
 const plumberConfig = (title) => {
 	return {
 		errorHandler: notify.onError({
-			title,
-			message: 'Error <%= error.message %>',
+			title, // место откуда пришла ошибка
+			message: 'Error <%= error.message %>', // шаблон из документации notify
 			sound: false,
 		}),
 	};
 };
 
-// =========================================================================================================================
-const htmlInclude = require('gulp-file-include');
+// ============================================================ Tasks ================================================================
+// ============================================================ Clean ===============================================================
 
-const htmlIncludeSettings = { prefix: '@@', basepath: '@file' };
+function clearDocs() {
+	if (fs.existsSync('./docs/')) {
+		return src('./docs/', { read: false }).pipe(clean({ force: true }));
+	}
+}
+exports.clearDocs = clearDocs;
 
-gulp.task('htmlInclude:docs', function () {
-	return gulp
-		.src(['./src/html/**/*.html', '!./src/html/blocks/*.html'])
+// ============================================================= HTML ================================================================
+
+function htmlIncludeDocs() {
+	return src(['./src/html/**/*.html', '!./src/html/blocks/*.html'])
 		.pipe(changed('./docs/'))
 		.pipe(plumber(plumberConfig('Html')))
 		.pipe(htmlInclude(htmlIncludeSettings))
 		.pipe(webpHtml())
 		.pipe(htmlClean())
-		.pipe(gulp.dest('./docs/'));
-});
-// =========================================================================================================================
-const scss = require('gulp-sass')(require('sass'));
-const sourceMaps = require('gulp-sourcemaps');
-// const mediaQueries = require('gulp-group-css-media-queries');
+		.pipe(dest('./docs/'));
+}
+exports.htmlIncludeDocs = htmlIncludeDocs;
 
-// const plumberScssConfig = {
-// 	errorHandler: notify.onError({
-// 		title: 'Styles', // место откуда пришла ошибка
-// 		message: 'Error <%= error.message %>', // шаблон из документации notify
-// 		sound: false,
-// 	}),
-// };
-
-gulp.task('sass:docs', function () {
+// ============================================================ SCSS ================================================================
+function scssDocs() {
 	return (
-		gulp
-			.src('./src/scss/*.scss')
+		src('./src/scss/*.scss')
 			.pipe(changed('./docs/css/'))
 			.pipe(plumber(plumberConfig('Styles')))
 			.pipe(sourceMaps.init())
@@ -67,72 +82,57 @@ gulp.task('sass:docs', function () {
 			.pipe(csso())
 			// .pipe(mediaQueries())
 			.pipe(sourceMaps.write())
-			.pipe(gulp.dest('./docs/css/'))
+			.pipe(dest('./docs/css/'))
 	);
-});
+}
+exports.scssDocs = scssDocs;
+// ========================================================== Copy ==================================================================
 
-// =========================================================================================================================
+function copyImagesDocs() {
+	return (
+		src('./src/img/**/*')
+			.pipe(changed('./docs/img/'))
+			.pipe(webp())
+			.pipe(dest('./docs/img/'))
+			// Два раза обращаемся к /img/
+			.pipe(src('./src/img/**/*'))
+			.pipe(changed('./docs/img/'))
+			.pipe(imagemin({ verbose: true }))
+			.pipe(dest('./docs/img/'))
+	);
+}
+exports.copyImagesDocs = copyImagesDocs;
 
-gulp.task('copy-images:docs', function () {
-	return gulp
-		.src('./src/img/**/*')
-		.pipe(changed('./docs/img/'))
-		.pipe(webp())
-		.pipe(gulp.dest('./docs/img/'))
+function copyFontsDocs() {
+	return src('./src/fonts/**/*').pipe(changed('./docs/fonts')).pipe(dest('./docs/fonts'));
+}
+exports.copyFontsDocs = copyFontsDocs;
 
-		.pipe(gulp.src('./src/img/**/*'))
-		.pipe(changed('./docs/img/'))
-		.pipe(imagemin({ verbose: true }))
-		.pipe(gulp.dest('./docs/img/'));
-});
+function copyFilesDocs() {
+	return src('./src/files/**/*').pipe(changed('./docs/files')).pipe(dest('./docs/files'));
+}
+exports.copyFilesDocs = copyFilesDocs;
+// ============================================================== JS ===================================================================
 
-gulp.task('copy-fonts:docs', function () {
-	return gulp.src('./src/fonts/**/*').pipe(changed('./docs/fonts')).pipe(gulp.dest('./docs/fonts'));
-});
-
-gulp.task('copy-files:docs', function () {
-	return gulp.src('./src/files/**/*').pipe(changed('./docs/files')).pipe(gulp.dest('./docs/files'));
-});
-// =========================================================================================================================
-
-gulp.task('js:docs', function () {
-	return gulp
-		.src('./js/*.js')
+function jsDocs() {
+	return src('./js/*.js')
 		.pipe(changed('./docs/js'))
 		.pipe(plumber(plumberConfig('JS')))
 		.pipe(babel())
 		.pipe(webpack(require('./../webpack.config.js')))
-		.pipe(gulp.dest('./docs/js'));
-});
+		.pipe(dest('./docs/js'));
+}
+exports.jsDocs = jsDocs;
+// =========================================================== Server ============================================================
 
-// =========================================================================================================================
-
-const server = require('gulp-server-livereload');
-
-gulp.task('startServer:docs', function () {
-	return gulp.src('./docs/').pipe(
+function startServerDocs() {
+	return src('./docs/').pipe(
 		server({
 			livereload: true,
 			open: true,
 		}),
 	);
-});
-// =========================================================================================================================
-
-const fs = require('fs');
-
-const clean = require('gulp-clean');
-
-gulp.task('clear:docs', function (done) {
-	if (fs.existsSync('./docs/')) {
-		return gulp.src('./docs/', { read: false }).pipe(clean({ force: true }));
-	}
-	done();
-});
-// =========================================================================================================================
-
-// =========================================================================================================================
-
-// =========================================================================================================================
+}
+exports.startServerDocs = startServerDocs;
 
 // =========================================================================================================================
