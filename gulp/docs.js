@@ -5,7 +5,6 @@ const htmlInclude = require('gulp-file-include');
 const htmlClean = require('gulp-htmlclean');
 const avifWebpHtml = require('gulp-avif-webp-html');
 
-
 //SCSS
 const sassGlob = require('gulp-sass-glob');
 const scss = require('gulp-sass')(require('sass'));
@@ -27,7 +26,6 @@ const avif = require('gulp-avif');
 const webp = require('gulp-webp');
 const imagemin = require('gulp-imagemin');
 const svgSprite = require('gulp-svg-sprite');
-
 
 const fs = require('fs');
 const clean = require('gulp-clean');
@@ -95,20 +93,32 @@ exports.scssDocs = scssDocs;
 
 function copyImagesDocs() {
 	return (
-		src('./src/img/**/*',"!./src/img/**/*.svg")
+		src('./src/img/**/*', '!./src/img/**/*.svg')
 			.pipe(changed('./docs/img/'))
 			.pipe(avif({ quality: 50 }))
 			.pipe(dest('./docs/img/'))
 			// Два раза обращаемся к /img/
-			.pipe(src('./src/img/**/*',"!./src/img/**/*.svg"))
+			.pipe(src('./src/img/**/*', '!./src/img/**/*.svg'))
 			.pipe(changed('./docs/img/'))
 			.pipe(webp())
 			.pipe(dest('./docs/img/'))
 			// Третий раза обращаемся к /img/
-			.pipe(src('./src/img/**/*'))
+			.pipe(src('./src/img/**/*', '!./src/img/**/*.svg'))
 			.pipe(changed('./docs/img/'))
 			.pipe(imagemin({ verbose: true }))
 			.pipe(dest('./docs/img/'))
+
+			.pipe(src('./src/img/**/*.svg'))
+			.pipe(
+				svgSprite({
+					mode: {
+						stack: {
+							sprite: '../sprite.svg',
+							example: true,
+						},
+					},
+				}).pipe(dest('./docs/img/')),
+			)
 	);
 }
 exports.copyImagesDocs = copyImagesDocs;
