@@ -1,24 +1,29 @@
 const gulp = require('gulp');
 
-const plumber = require('gulp-plumber');
+//HTML
+const htmlInclude = require('gulp-file-include');
+
+
+//SCSS
+const sassGlob = require('gulp-sass-glob');
+const scss = require('gulp-sass')(require('sass'));
+const sourceMaps = require('gulp-sourcemaps');
+
+//JS
 const notify = require('gulp-notify');
 const webpack = require('webpack-stream');
 // const babel = require('gulp-babel');
+
 // const imagemin = require('gulp-imagemin');
+const fs = require('fs');
+const clean = require('gulp-clean');
+const plumber = require('gulp-plumber');
 const changed = require('gulp-changed');
-const sassGlob = require('gulp-sass-glob');
-// gulp.task('hello', function (done) {
-// 	console.log('hello gulp');
-// 	done()
-// });
+const server = require('gulp-server-livereload');
 
-// gulp.task('fuck', function (done) {
-// 	console.log('fuck you gulp');
-// 	done()
-// });
+// =============================================================== Const =====================================================================
 
-// gulp.task('default', gulp.series('hello', 'fuck'));
-// =========================================================================================================================
+const htmlIncludeSettings = { prefix: '@@', basepath: '@file' };
 
 const plumberConfig = (title) => {
 	return {
@@ -30,18 +35,9 @@ const plumberConfig = (title) => {
 	};
 };
 
-// =========================================================================================================================
-const htmlInclude = require('gulp-file-include');
+// ============================================================ Tasks ================================================================
 
-const htmlIncludeSettings = { prefix: '@@', basepath: '@file' };
-
-// const plumberHtmlConfig = {
-// 	errorHandler: notify.onError({
-// 		title: 'Html', // место откуда пришла ошибка
-// 		message: 'Error <%= error.message %>', // шаблон из документации notify
-// 		sound: false,
-// 	}),
-// };
+// ============================================================= HTML ================================================================
 
 gulp.task('htmlInclude:dev', function () {
 	return gulp
@@ -51,10 +47,7 @@ gulp.task('htmlInclude:dev', function () {
 		.pipe(htmlInclude(htmlIncludeSettings))
 		.pipe(gulp.dest('./build/'));
 });
-// =========================================================================================================================
-const scss = require('gulp-sass')(require('sass'));
-const sourceMaps = require('gulp-sourcemaps');
-
+// ============================================================ SCSS ================================================================
 
 gulp.task('sass:dev', function () {
 	return (
@@ -69,7 +62,7 @@ gulp.task('sass:dev', function () {
 			.pipe(gulp.dest('./build/css/'))
 	);
 });
-// =========================================================================================================================
+// ========================================================== Copy ==================================================================
 
 gulp.task('copy-images:dev', function () {
 	return gulp
@@ -86,7 +79,7 @@ gulp.task('copy-fonts:dev', function () {
 gulp.task('copy-files:dev', function () {
 	return gulp.src('./src/files/**/*').pipe(changed('./build/files')).pipe(gulp.dest('./build/files'));
 });
-// =========================================================================================================================
+// ============================================================== JS ===================================================================
 
 gulp.task('js:dev', function () {
 	return gulp
@@ -98,9 +91,7 @@ gulp.task('js:dev', function () {
 		.pipe(gulp.dest('./build/js'));
 });
 
-// =========================================================================================================================
-
-const server = require('gulp-server-livereload');
+// =========================================================== Server ============================================================
 
 gulp.task('startServer:dev', function () {
 	return gulp.src('./build/').pipe(
@@ -110,11 +101,7 @@ gulp.task('startServer:dev', function () {
 		}),
 	);
 });
-// =========================================================================================================================
-
-const fs = require('fs');
-
-const clean = require('gulp-clean');
+// ========================================================== Clean ===============================================================
 
 gulp.task('clear:dev', function (done) {
 	if (fs.existsSync('./build/')) {
@@ -122,7 +109,7 @@ gulp.task('clear:dev', function (done) {
 	}
 	done();
 });
-// =========================================================================================================================
+// ========================================================= Watch =======================================================================
 
 gulp.task('watch:dev', function () {
 	gulp.watch('./src/scss/**/*.scss', gulp.parallel('sass:dev'));
@@ -132,9 +119,4 @@ gulp.task('watch:dev', function () {
 	gulp.watch('./src/files/**/*', gulp.parallel('copy-files:dev'));
 	gulp.watch('./src/js/**/*.js', gulp.parallel('js:dev'));
 });
-// =========================================================================================================================
 
-
-// =========================================================================================================================
-
-// =========================================================================================================================
