@@ -7,6 +7,7 @@ const htmlInclude = require('gulp-file-include');
 const sassGlob = require('gulp-sass-glob');
 const scss = require('gulp-sass')(require('sass'));
 const sourceMaps = require('gulp-sourcemaps');
+// const mediaQueries = require('gulp-group-css-media-queries');
 
 //JS
 const notify = require('gulp-notify');
@@ -62,6 +63,7 @@ function scssDev() {
 		.pipe(sourceMaps.init())
 		.pipe(sassGlob())
 		.pipe(scss())
+		// .pipe(mediaQueries())// Конфликтует с sourceMaps. Включать отдельно друг от друга
 		.pipe(sourceMaps.write())
 		.pipe(dest('./build/css/'));
 }

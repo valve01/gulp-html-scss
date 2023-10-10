@@ -14,6 +14,7 @@ const sourceMaps = require('gulp-sourcemaps');
 const autoprefixer = require('gulp-autoprefixer');
 const csso = require('gulp-csso');
 const webpCss = require('gulp-webp-css');
+// const mediaQueries = require('gulp-group-css-media-queries');
 
 //JS
 const notify = require('gulp-notify');
@@ -24,7 +25,7 @@ const babel = require('gulp-babel');
 const webp = require('gulp-webp');
 const imagemin = require('gulp-imagemin');
 
-// const mediaQueries = require('gulp-group-css-media-queries');
+
 const fs = require('fs');
 const clean = require('gulp-clean');
 const plumber = require('gulp-plumber');
@@ -80,7 +81,7 @@ function scssDocs() {
 			.pipe(webpCss())
 			.pipe(scss())
 			.pipe(csso())
-			// .pipe(mediaQueries())
+			// .pipe(mediaQueries())// Конфликтует с sourceMaps. Включать отдельно друг от друга
 			.pipe(sourceMaps.write())
 			.pipe(dest('./docs/css/'))
 	);
