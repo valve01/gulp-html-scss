@@ -26,7 +26,7 @@ const babel = require('gulp-babel');
 const avif = require('gulp-avif');
 const webp = require('gulp-webp');
 const imagemin = require('gulp-imagemin');
-
+const svgSprite = require('gulp-svg-sprite');
 
 
 const fs = require('fs');
