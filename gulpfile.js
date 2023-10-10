@@ -36,4 +36,4 @@ exports.docs = series(
 	parallel(htmlIncludeDocs, scssDocs, copyImagesDocs, copyFontsDocs, copyFilesDocs, jsDocs),
 	parallel(startServerDocs),
 );
-exports.clear = clearDev;
+
