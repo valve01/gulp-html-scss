@@ -1,8 +1,7 @@
+const { src, dest, watch } = require('gulp');
 const gulp = require('gulp');
-
 //HTML
 const htmlInclude = require('gulp-file-include');
-
 
 //SCSS
 const sassGlob = require('gulp-sass-glob');
@@ -39,84 +38,88 @@ const plumberConfig = (title) => {
 
 // ============================================================= HTML ================================================================
 
-gulp.task('htmlInclude:dev', function () {
-	return gulp
-		.src(['./src/html/**/*.html','!./src/html/blocks/*.html'])
-		.pipe(changed('./build/', { hasChanged: changed.compareContents }))// Настройка нужна, чтобы при изменении файлов, подключенных к index.html сам index.html также пересобирался
+function htmlIncludeDev() {
+	return src(['./src/html/**/*.html', '!./src/html/blocks/*.html'])
+		.pipe(changed('./build/', { hasChanged: changed.compareContents })) // Настройка нужна, чтобы при изменении файлов, подключенных к index.html сам index.html также пересобирался
 		.pipe(plumber(plumberConfig('Html')))
 		.pipe(htmlInclude(htmlIncludeSettings))
-		.pipe(gulp.dest('./build/'));
-});
+		.pipe(dest('./build/'));
+}
+exports.htmlIncludeDev = htmlIncludeDev;
 // ============================================================ SCSS ================================================================
 
-gulp.task('sass:dev', function () {
-	return (
-		gulp
-			.src('./src/scss/*.scss')
-			.pipe(changed('./build/css/'))
-			.pipe(plumber(plumberConfig('Styles')))
-			.pipe(sourceMaps.init())
-			.pipe(sassGlob())
-			.pipe(scss())
-			.pipe(sourceMaps.write())
-			.pipe(gulp.dest('./build/css/'))
-	);
-});
+function scssDev() {
+	return src('./src/scss/*.scss')
+		.pipe(changed('./build/css/'))
+		.pipe(plumber(plumberConfig('Styles')))
+		.pipe(sourceMaps.init())
+		.pipe(sassGlob())
+		.pipe(scss())
+		.pipe(sourceMaps.write())
+		.pipe(dest('./build/css/'));
+}
+exports.scssDev = scssDev;
 // ========================================================== Copy ==================================================================
 
-gulp.task('copy-images:dev', function () {
-	return gulp
-		.src('./src/img/**/*')
-		.pipe(changed('./build/img/'))
-		// .pipe(imagemin({ verbose: true })) // настройка включает отображение в консоли какие файлы были оптимизированы и сколько места сэкономлено
-		.pipe(gulp.dest('./build/img/'));
-});
+function copyImagesDev() {
+	return (
+		src('./src/img/**/*')
+			.pipe(changed('./build/img/'))
+			// .pipe(imagemin({ verbose: true })) // настройка включает отображение в консоли какие файлы были оптимизированы и сколько места сэкономлено
+			.pipe(dest('./build/img/'))
+	);
+}
+exports.copyImagesDev = copyImagesDev;
 
-gulp.task('copy-fonts:dev', function () {
-	return gulp.src('./src/fonts/**/*').pipe(changed('./build/fonts')).pipe(gulp.dest('./build/fonts'));
-});
+function copyFontsDev() {
+	return src('./src/fonts/**/*').pipe(changed('./build/fonts')).pipe(dest('./build/fonts'));
+}
+exports.copyFontsDev = copyFontsDev;
 
-gulp.task('copy-files:dev', function () {
-	return gulp.src('./src/files/**/*').pipe(changed('./build/files')).pipe(gulp.dest('./build/files'));
-});
+function copyFilesDev() {
+	return src('./src/files/**/*').pipe(changed('./build/files')).pipe(dest('./build/files'));
+}
+exports.copyFilesDev = copyFilesDev;
 // ============================================================== JS ===================================================================
 
-gulp.task('js:dev', function () {
-	return gulp
-		.src('./js/*.js')
-		.pipe(changed('./build/js'))
-		.pipe(plumber(plumberConfig('JS')))
-		// .pipe(babel())//выключен в dev режиме
-		.pipe(webpack(require('./../webpack.config.js')))
-		.pipe(gulp.dest('./build/js'));
-});
-
+function jsDev() {
+	return (
+		src('./js/*.js')
+			.pipe(changed('./build/js'))
+			.pipe(plumber(plumberConfig('JS')))
+			// .pipe(babel())//выключен в dev режиме
+			.pipe(webpack(require('./../webpack.config.js')))
+			.pipe(dest('./build/js'))
+	);
+}
+exports.jsDev = jsDev;
 // =========================================================== Server ============================================================
 
-gulp.task('startServer:dev', function () {
-	return gulp.src('./build/').pipe(
+function startServerDev() {
+	return src('./build/').pipe(
 		server({
 			livereload: true,
 			open: true,
 		}),
 	);
-});
+}
+exports.startServerDev = startServerDev;
 // ========================================================== Clean ===============================================================
 
-gulp.task('clear:dev', function (done) {
+function clearDev() {
 	if (fs.existsSync('./build/')) {
-		return gulp.src('./build/', { read: false }).pipe(clean({ force: true }));
+		return src('./build/', { read: false }).pipe(clean({ force: true }));
 	}
-	done();
-});
+}
+exports.clearDev = clearDev;
 // ========================================================= Watch =======================================================================
 
-gulp.task('watch:dev', function () {
-	gulp.watch('./src/scss/**/*.scss', gulp.parallel('sass:dev'));
-	gulp.watch('./src/**/*.html', gulp.parallel('htmlInclude:dev'));
-	gulp.watch('./src/img/**/*', gulp.parallel('copy-images:dev'));
-	gulp.watch('./src/fonts/**/*', gulp.parallel('copy-fonts:dev'));
-	gulp.watch('./src/files/**/*', gulp.parallel('copy-files:dev'));
-	gulp.watch('./src/js/**/*.js', gulp.parallel('js:dev'));
-});
-
+function watchDev() {
+	watch('./src/scss/**/*.scss', scssDev);
+	watch('./src/**/*.html', htmlIncludeDev);
+	watch('./src/img/**/*', copyImagesDev);
+	watch('./src/fonts/**/*', copyFontsDev);
+	watch('./src/files/**/*', copyFilesDev);
+	watch('./src/js/**/*.js', jsDev);
+}
+exports.watchDev = watchDev;

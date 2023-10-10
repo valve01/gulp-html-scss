@@ -1,22 +1,28 @@
 const gulp = require('gulp');
+const { series, parallel } = require('gulp');
 
-require('./gulp/dev.js');
+const {
+	clearDev,
+	scssDev,
+	htmlIncludeDev,
+	copyImagesDev,
+	copyFontsDev,
+	copyFilesDev,
+	jsDev,
+	startServerDev,
+	watchDev,
+} = require('./gulp/dev.js');
+
+
 require('./gulp/docs.js');
-gulp.task(
-	'default',
-	gulp.series(
-		'clear:dev',
-		gulp.parallel(
-			'sass:dev',
-			'htmlInclude:dev',
-			'copy-images:dev',
-			'copy-fonts:dev',
-			'copy-files:dev',
-			'js:dev',
-		),
-		gulp.parallel('startServer:dev', 'watch:dev'),
-	),
+
+exports.default = series(
+	clearDev,
+	parallel(scssDev, htmlIncludeDev, copyImagesDev, copyFontsDev, copyFilesDev, jsDev),
+	parallel(startServerDev, watchDev),
 );
+
+
 gulp.task(
 	'docs',
 	gulp.series(
