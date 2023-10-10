@@ -1,11 +1,10 @@
-const gulp = require('gulp');
-
 const { src, dest } = require('gulp');
 
 //HTML
 const htmlInclude = require('gulp-file-include');
 const htmlClean = require('gulp-htmlclean');
-const webpHtml = require('gulp-webp-html');
+const avifWebpHtml = require('gulp-avif-webp-html');
+
 
 //SCSS
 const sassGlob = require('gulp-sass-glob');
@@ -14,6 +13,7 @@ const sourceMaps = require('gulp-sourcemaps');
 const autoprefixer = require('gulp-autoprefixer');
 const csso = require('gulp-csso');
 const webpCss = require('gulp-webp-css');
+const avifCss = require('gulp-avif-css');
 // const mediaQueries = require('gulp-group-css-media-queries');
 
 //JS
@@ -22,8 +22,11 @@ const webpack = require('webpack-stream');
 const babel = require('gulp-babel');
 
 //Images
+// const cached = require('gulp-cached');
+const avif = require('gulp-avif');
 const webp = require('gulp-webp');
 const imagemin = require('gulp-imagemin');
+
 
 
 const fs = require('fs');
@@ -63,7 +66,7 @@ function htmlIncludeDocs() {
 		.pipe(changed('./docs/'))
 		.pipe(plumber(plumberConfig('Html')))
 		.pipe(htmlInclude(htmlIncludeSettings))
-		.pipe(webpHtml())
+		.pipe(avifWebpHtml())
 		.pipe(htmlClean())
 		.pipe(dest('./docs/'));
 }
@@ -79,6 +82,7 @@ function scssDocs() {
 			.pipe(autoprefixer()) // не срабатывет не может прочитать нужен postcss-scss parser (такая ошибка вылазит если будет комментарий в scss)
 			.pipe(sassGlob())
 			.pipe(webpCss())
+			.pipe(avifCss())
 			.pipe(scss())
 			.pipe(csso())
 			// .pipe(mediaQueries())// Конфликтует с sourceMaps. Включать отдельно друг от друга
@@ -91,11 +95,16 @@ exports.scssDocs = scssDocs;
 
 function copyImagesDocs() {
 	return (
-		src('./src/img/**/*')
+		src('./src/img/**/*',"!./src/img/**/*.svg")
+			.pipe(changed('./docs/img/'))
+			.pipe(avif({ quality: 50 }))
+			.pipe(dest('./docs/img/'))
+			// Два раза обращаемся к /img/
+			.pipe(src('./src/img/**/*',"!./src/img/**/*.svg"))
 			.pipe(changed('./docs/img/'))
 			.pipe(webp())
 			.pipe(dest('./docs/img/'))
-			// Два раза обращаемся к /img/
+			// Третий раза обращаемся к /img/
 			.pipe(src('./src/img/**/*'))
 			.pipe(changed('./docs/img/'))
 			.pipe(imagemin({ verbose: true }))
