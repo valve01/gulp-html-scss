@@ -14,6 +14,7 @@ const notify = require('gulp-notify');
 const webpack = require('webpack-stream');
 // const babel = require('gulp-babel');
 
+const svgSprite = require('gulp-svg-sprite');
 // const imagemin = require('gulp-imagemin');
 const fs = require('fs');
 const clean = require('gulp-clean');
@@ -38,14 +39,14 @@ const plumberConfig = (title) => {
 // ============================================================ Tasks ================================================================
 // ============================================================ Clean ===============================================================
 
-function clearDev(done) {
+function cleanDev(done) {
 	if (fs.existsSync('./build/')) {
 		return src(['./build/'], { read: false }).pipe(clean({ force: true }));
 	}
 	done();
 }
 
-exports.clearDev = clearDev;
+exports.cleanDev = cleanDev;
 // ============================================================= HTML ================================================================
 
 function htmlIncludeDev() {
@@ -76,13 +77,30 @@ exports.scssDev = scssDev;
 
 function copyImagesDev() {
 	return (
-		src('./src/img/**/*')
+		src(['./src/img/**/*', '!./src/img/**/*.svg'])
 			.pipe(changed('./build/img/'))
 			// .pipe(imagemin({ verbose: true })) // настройка включает отображение в консоли какие файлы были оптимизированы и сколько места сэкономлено
 			.pipe(dest('./build/img/'))
 	);
 }
 exports.copyImagesDev = copyImagesDev;
+
+function spriteDev() {
+	return src('./src/img/**/*.svg')
+		.pipe(changed('./build/img/'))
+		.pipe(
+			svgSprite({
+				mode: {
+					stack: {
+						sprite: '../sprite.svg',
+						example: true,
+					},
+				},
+			}),
+		)
+		.pipe(dest('./build/img/'));
+}
+exports.spriteDev = spriteDev;
 
 function copyFontsDev() {
 	return src('./src/fonts/**/*').pipe(changed('./build/fonts')).pipe(dest('./build/fonts'));

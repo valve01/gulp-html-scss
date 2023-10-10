@@ -2,7 +2,7 @@ const { series, parallel } = require('gulp');
 
 // ==============================================================DEV==================================================
 const {
-	clearDev,
+	cleanDev,
 	scssDev,
 	htmlIncludeDev,
 	copyImagesDev,
@@ -11,29 +11,30 @@ const {
 	jsDev,
 	startServerDev,
 	watchDev,
+	spriteDev,
 } = require('./gulp/dev.js');
 
 exports.default = series(
-	clearDev,
-	parallel(scssDev, htmlIncludeDev, copyImagesDev, copyFontsDev, copyFilesDev, jsDev),
+	cleanDev,
+	parallel(scssDev, htmlIncludeDev, copyImagesDev, spriteDev, copyFontsDev, copyFilesDev, jsDev),
 	parallel(startServerDev, watchDev),
 );
 
 // =============================================================DOCS===============================================
 const {
-	clearDocs,
+	cleanDocs,
 	htmlIncludeDocs,
 	scssDocs,
-	copyImagesDocs,
+	imagesDocs,
 	copyFontsDocs,
 	copyFilesDocs,
 	jsDocs,
 	startServerDocs,
+	spriteDocs,
 } = require('./gulp/docs.js');
 
 exports.docs = series(
-	clearDocs,
-	parallel(htmlIncludeDocs, scssDocs, copyImagesDocs, copyFontsDocs, copyFilesDocs, jsDocs),
+	cleanDocs,
+	parallel(htmlIncludeDocs, scssDocs, imagesDocs, spriteDocs, copyFontsDocs, copyFilesDocs, jsDocs),
 	parallel(startServerDocs),
 );
-

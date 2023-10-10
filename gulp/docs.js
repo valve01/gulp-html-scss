@@ -50,12 +50,12 @@ const plumberConfig = (title) => {
 // ============================================================ Tasks ================================================================
 // ============================================================ Clean ===============================================================
 
-function clearDocs() {
+function cleanDocs() {
 	if (fs.existsSync('./docs/')) {
 		return src('./docs/', { read: false }).pipe(clean({ force: true }));
 	}
 }
-exports.clearDocs = clearDocs;
+exports.cleanDocs = cleanDocs;
 
 // ============================================================= HTML ================================================================
 
@@ -89,45 +89,52 @@ function scssDocs() {
 	);
 }
 exports.scssDocs = scssDocs;
-// ========================================================== Copy ==================================================================
+// ========================================================== Images ==================================================================
 
-function copyImagesDocs() {
+function imagesDocs() {
 	return (
-		src('./src/img/**/*', '!./src/img/**/*.svg')
+		src(['./src/img/**/*', '!./src/img/**/*.svg'])
 			.pipe(changed('./docs/img/'))
 			.pipe(avif({ quality: 50 }))
 			.pipe(dest('./docs/img/'))
 			// Два раза обращаемся к /img/
-			.pipe(src('./src/img/**/*', '!./src/img/**/*.svg'))
+			.pipe(src(['./src/img/**/*', '!./src/img/**/*.svg']))
 			.pipe(changed('./docs/img/'))
 			.pipe(webp())
 			.pipe(dest('./docs/img/'))
 			// Третий раза обращаемся к /img/
-			.pipe(src('./src/img/**/*', '!./src/img/**/*.svg'))
+			.pipe(src(['./src/img/**/*', '!./src/img/**/*.svg']))
 			.pipe(changed('./docs/img/'))
 			.pipe(imagemin({ verbose: true }))
 			.pipe(dest('./docs/img/'))
-
-			.pipe(src('./src/img/**/*.svg'))
-			.pipe(
-				svgSprite({
-					mode: {
-						stack: {
-							sprite: '../sprite.svg',
-							example: true,
-						},
-					},
-				}).pipe(dest('./docs/img/')),
-			)
 	);
 }
-exports.copyImagesDocs = copyImagesDocs;
+exports.imagesDocs = imagesDocs;
 
+
+function spriteDocs() {
+	return src('./src/img/**/*.svg')
+		.pipe(changed('./docs/img/'))
+		.pipe(
+			svgSprite({
+				mode: {
+					stack: {
+						sprite: '../sprite.svg',
+						example: true,
+					},
+				},
+			}),
+		)
+		.pipe(dest('./docs/img/'));
+}
+exports.spriteDocs = spriteDocs;
+
+// ========================================================== CopyFonts ==================================================================
 function copyFontsDocs() {
 	return src('./src/fonts/**/*').pipe(changed('./docs/fonts')).pipe(dest('./docs/fonts'));
 }
 exports.copyFontsDocs = copyFontsDocs;
-
+// ========================================================== CopyFiles ==================================================================
 function copyFilesDocs() {
 	return src('./src/files/**/*').pipe(changed('./docs/files')).pipe(dest('./docs/files'));
 }
