@@ -26,7 +26,7 @@ const {
 	htmlIncludeDocs,
 	scssDocs,
 	imagesDocs,
-	copyFontsDocs,
+	fontsDocs,
 	copyFilesDocs,
 	jsDocs,
 	startServerDocs,
@@ -35,6 +35,6 @@ const {
 
 exports.docs = series(
 	cleanDocs,
-	parallel(htmlIncludeDocs, scssDocs, imagesDocs, spriteDocs, copyFontsDocs, copyFilesDocs, jsDocs),
+	parallel(htmlIncludeDocs, scssDocs, imagesDocs, spriteDocs, fontsDocs, copyFilesDocs, jsDocs),
 	parallel(startServerDocs),
 );

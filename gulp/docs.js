@@ -27,6 +27,10 @@ const webp = require('gulp-webp');
 const imagemin = require('gulp-imagemin');
 const svgSprite = require('gulp-svg-sprite');
 
+//Fonts
+const fonter = require('gulp-fonter');
+const ttf2woff2 = require('gulp-ttf2woff2');
+
 const fs = require('fs');
 const clean = require('gulp-clean');
 const plumber = require('gulp-plumber');
@@ -111,7 +115,6 @@ function imagesDocs() {
 }
 exports.imagesDocs = imagesDocs;
 
-
 function spriteDocs() {
 	return src('./src/img/**/*.svg')
 		.pipe(changed('./docs/img/'))
@@ -129,12 +132,27 @@ function spriteDocs() {
 }
 exports.spriteDocs = spriteDocs;
 
-// ========================================================== CopyFonts ==================================================================
-function copyFontsDocs() {
-	return src('./src/fonts/**/*').pipe(changed('./docs/fonts')).pipe(dest('./docs/fonts'));
+// ========================================================== Fonts ==================================================================
+function fontsDocs() {
+	return src('./src/fonts/**/*')
+		.pipe(changed('./docs/fonts'))
+		.pipe(
+			fonter({
+				formats: ['woff', 'ttf'], // любые форматы конвертирует в woof и ttf
+			}),
+		)
+//Второй раз обращаемся только к ttf файлам// В шрифтах мы не делаем 		.pipe(dest('./docs/fonts'))		 перед тем как обратиться к только что сконвертированному ttf
+		.pipe(src('./docs/fonts/**/*.ttf'))
+		.pipe(changed('./docs/fonts'))
+		.pipe(ttf2woff2())
+		.pipe(dest('./docs/fonts'));
 }
-exports.copyFontsDocs = copyFontsDocs;
+
+exports.fontsDocs = fontsDocs;
+
+
 // ========================================================== CopyFiles ==================================================================
+
 function copyFilesDocs() {
 	return src('./src/files/**/*').pipe(changed('./docs/files')).pipe(dest('./docs/files'));
 }
