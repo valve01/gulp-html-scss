@@ -3,6 +3,13 @@
 
 Gulp работает на NodeJS, так что надо ее установить
 Интерфейс командной строки для gulp npm i --global gulp-cli
+----------------------------------------------------------------------
+How to add gulp to reactjs?
+
+When you create a project with create-react-app you already have a system that does this for you. It's called react-scripts and it does babel and bundling for you. Instead of using a watch task you'll run npm start and all the babeling and bundling is done for you behind the scenes. When you want to deploy your code you use npm run build to create the final files.
+
+I would suggest you don't run babel, don't do any bundling and don't run watch tasks when you integrate Gulp with React. This is already being done by react-scripts. You can use Gulp for simple stuff like compressing images instead.
+
 ---------------------------------------------------------------------- Команда для установки всех
 пакетов: npm i gulp gulp-sass sass gulp-file-include gulp-clean gulp-server-livereload
 gulp-sourcemaps gulp-plumber gulp-notify gulp-group-css-media-queries --save-dev Описание пакетов:
@@ -617,3 +624,5 @@ webp , которую уже должен был положить в папку 
 
  gulp-fonter - конвертирует любой шрифт в другие шрифты (в том числе в woff) (["ttf", "otf", "eot", "woff", "svg"])
  gulp-ttf2woff2 - только ttf в woff2
+
+ 1:07

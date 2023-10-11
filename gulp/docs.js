@@ -123,8 +123,8 @@ function spriteDocs() {
 				mode: {
 					stack: {
 						sprite: '../sprite.svg',
-						example: true,
-					},
+						example: false, //отвечает за создания папки stack с вложенным в нее файлом sprite.stack.html , где есть примеры применения конкрентного файла из спрайта
+					}, 
 				},
 			}),
 		)
@@ -134,22 +134,23 @@ exports.spriteDocs = spriteDocs;
 
 // ========================================================== Fonts ==================================================================
 function fontsDocs() {
-	return src('./src/fonts/**/*')
-		.pipe(changed('./docs/fonts'))
-		.pipe(
-			fonter({
-				formats: ['woff', 'ttf'], // любые форматы конвертирует в woof и ttf
-			}),
-		)
-//Второй раз обращаемся только к ttf файлам// В шрифтах мы не делаем 		.pipe(dest('./docs/fonts'))		 перед тем как обратиться к только что сконвертированному ttf
-		.pipe(src('./docs/fonts/**/*.ttf'))
-		.pipe(changed('./docs/fonts'))
-		.pipe(ttf2woff2())
-		.pipe(dest('./docs/fonts'));
+	return (
+		src('./src/fonts/**/*')
+			.pipe(changed('./docs/fonts'))
+			.pipe(
+				fonter({
+					formats: ['woff', 'ttf'], // любые форматы конвертирует в woof и ttf
+				}),
+			)
+			//Второй раз обращаемся только к ttf файлам// В шрифтах мы не делаем 		.pipe(dest('./docs/fonts'))		 перед тем как обратиться к только что сконвертированному ttf
+			.pipe(src('./docs/fonts/**/*.ttf'))
+			.pipe(changed('./docs/fonts'))
+			.pipe(ttf2woff2())
+			.pipe(dest('./docs/fonts'))
+	);
 }
 
 exports.fontsDocs = fontsDocs;
-
 
 // ========================================================== CopyFiles ==================================================================
 

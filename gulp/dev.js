@@ -93,7 +93,7 @@ function spriteDev() {
 				mode: {
 					stack: {
 						sprite: '../sprite.svg',
-						example: true,
+						example: true, //отвечает за создания папки stack с вложенным в нее файлом sprite.stack.html , где есть примеры применения конкрентного файла из спрайта
 					},
 				},
 			}),
