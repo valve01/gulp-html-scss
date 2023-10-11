@@ -1,30 +1,33 @@
 const { src, dest, watch } = require('gulp');
-
-//HTML
-const htmlInclude = require('gulp-file-include');
-
-//SCSS
-const sassGlob = require('gulp-sass-glob');
-const scss = require('gulp-sass')(require('sass'));
-const sourceMaps = require('gulp-sourcemaps');
-// const mediaQueries = require('gulp-group-css-media-queries');
-
-//JS
-const notify = require('gulp-notify');
-const webpack = require('webpack-stream');
-// const babel = require('gulp-babel');
-
-const svgSprite = require('gulp-svg-sprite');
-// const imagemin = require('gulp-imagemin');
 const fs = require('fs');
 const clean = require('gulp-clean');
 const plumber = require('gulp-plumber');
 const changed = require('gulp-changed');
 const server = require('gulp-server-livereload');
 
+//HTML
+const fileInclude = require('gulp-file-include');
+
+//SCSS
+const sassGlob = require('gulp-sass-glob');
+const scss = require('gulp-sass')(require('sass'));
+const sourceMaps = require('gulp-sourcemaps');
+// const mediaQueries = require('gulp-group-css-media-queries');//конфиликтует с sourcemaps
+
+//JS
+const notify = require('gulp-notify');
+const webpack = require('webpack-stream');
+
+//Images
+const svgSprite = require('gulp-svg-sprite');
+
+//Fonts
+const fonter = require('gulp-fonter');
+const ttf2woff2 = require('gulp-ttf2woff2');
+
 // =============================================================== Const =====================================================================
 
-const htmlIncludeSettings = { prefix: '@@', basepath: '@file' };
+const fileIncludeSettings = { prefix: '@@', basepath: '@file' };
 
 const plumberConfig = (title) => {
 	return {
@@ -46,17 +49,16 @@ function cleanDev(done) {
 	done();
 }
 
-exports.cleanDev = cleanDev;
 // ============================================================= HTML ================================================================
 
 function htmlIncludeDev() {
 	return src(['./src/html/**/*.html', '!./src/html/blocks/*.html'])
 		.pipe(changed('./build/', { hasChanged: changed.compareContents })) // Настройка нужна, чтобы при изменении файлов, подключенных к index.html сам index.html также пересобирался
 		.pipe(plumber(plumberConfig('Html')))
-		.pipe(htmlInclude(htmlIncludeSettings))
+		.pipe(fileInclude(fileIncludeSettings))
 		.pipe(dest('./build/'));
 }
-exports.htmlIncludeDev = htmlIncludeDev;
+
 // ============================================================ SCSS ================================================================
 
 function scssDev() {
@@ -72,8 +74,8 @@ function scssDev() {
 			.pipe(dest('./build/css/'))
 	);
 }
-exports.scssDev = scssDev;
-// ========================================================== Copy ==================================================================
+
+// ========================================================== Images ==================================================================
 
 function copyImagesDev() {
 	return (
@@ -83,7 +85,6 @@ function copyImagesDev() {
 			.pipe(dest('./build/img/'))
 	);
 }
-exports.copyImagesDev = copyImagesDev;
 
 function spriteDev() {
 	return src('./src/img/**/*.svg')
@@ -100,17 +101,32 @@ function spriteDev() {
 		)
 		.pipe(dest('./build/img/'));
 }
-exports.spriteDev = spriteDev;
 
-function copyFontsDev() {
-	return src('./src/fonts/**/*').pipe(changed('./build/fonts')).pipe(dest('./build/fonts'));
+// ========================================================== Fonts ==================================================================
+
+function fontsDev() {
+	return (
+		src('./src/fonts/**/*')
+			.pipe(changed('./build/fonts'))
+			.pipe(
+				fonter({
+					formats: ['woff', 'ttf'], // любые форматы конвертирует в woof и ttf
+				}),
+			)
+			//Второй раз обращаемся только к ttf файлам// В шрифтах мы не делаем 		.pipe(dest('./build/fonts'))		 перед тем как обратиться к только что сконвертированному ttf
+			.pipe(src('./build/fonts/**/*.ttf'))
+			.pipe(changed('./build/fonts'))
+			.pipe(ttf2woff2())
+			.pipe(dest('./build/fonts'))
+	);
 }
-exports.copyFontsDev = copyFontsDev;
+
+// ========================================================== CopyFiles ==================================================================
 
 function copyFilesDev() {
 	return src('./src/files/**/*').pipe(changed('./build/files')).pipe(dest('./build/files'));
 }
-exports.copyFilesDev = copyFilesDev;
+
 // ============================================================== JS ===================================================================
 
 function jsDev() {
@@ -123,7 +139,7 @@ function jsDev() {
 			.pipe(dest('./build/js'))
 	);
 }
-exports.jsDev = jsDev;
+
 // =========================================================== Server ============================================================
 
 function startServerDev() {
@@ -134,22 +150,27 @@ function startServerDev() {
 		}),
 	);
 }
-exports.startServerDev = startServerDev;
-// ========================================================= Watch =======================================================================
-// ========================================================= Watch =======================================================================
-// ========================================================= Watch =======================================================================
-// ========================================================= Watch =======================================================================
 
-// ========================================================= Watch =======================================================================
-// ========================================================= Watch =======================================================================
 // ========================================================= Watch =======================================================================
 
 function watchDev() {
 	watch('./src/scss/**/*.scss', scssDev);
-	watch('./src/**/*.html', htmlIncludeDev);
-	watch('./src/img/**/*', copyImagesDev);
-	watch('./src/fonts/**/*', copyFontsDev);
-	watch('./src/files/**/*', copyFilesDev);
+	watch('./src/fonts/**/*', fontsDev);
 	watch('./src/js/**/*.js', jsDev);
+	watch('./src/**/*.html', htmlIncludeDev);
+	watch('./src/img/**/*.svg', spriteDev);
+	watch(['./src/img/**/*', '!./src/img/**/*.svg'], copyImagesDev);
+	watch('./src/files/**/*', copyFilesDev);
 }
+//============================================================================================================================================
+
+exports.cleanDev = cleanDev;
+exports.htmlIncludeDev = htmlIncludeDev;
+exports.scssDev = scssDev;
+exports.copyImagesDev = copyImagesDev;
+exports.spriteDev = spriteDev;
+exports.fontsDev = fontsDev;
+exports.copyFilesDev = copyFilesDev;
+exports.jsDev = jsDev;
+exports.startServerDev = startServerDev;
 exports.watchDev = watchDev;

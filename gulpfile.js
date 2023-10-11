@@ -6,7 +6,7 @@ const {
 	scssDev,
 	htmlIncludeDev,
 	copyImagesDev,
-	copyFontsDev,
+	fontsDev,
 	copyFilesDev,
 	jsDev,
 	startServerDev,
@@ -16,11 +16,11 @@ const {
 
 exports.default = series(
 	cleanDev,
-	parallel(scssDev, htmlIncludeDev, copyImagesDev, spriteDev, copyFontsDev, copyFilesDev, jsDev),
+	parallel(scssDev, htmlIncludeDev, copyImagesDev, spriteDev, fontsDev, copyFilesDev, jsDev),
 	parallel(startServerDev, watchDev),
 );
 
-// =============================================================DOCS===============================================
+// =============================================================PROD===============================================
 const {
 	cleanDocs,
 	htmlIncludeDocs,

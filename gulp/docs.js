@@ -1,9 +1,14 @@
 const { src, dest } = require('gulp');
+const fs = require('fs');
+const clean = require('gulp-clean');
+const plumber = require('gulp-plumber');
+const changed = require('gulp-changed');
+const server = require('gulp-server-livereload');
 
 //HTML
-const htmlInclude = require('gulp-file-include');
-const htmlClean = require('gulp-htmlclean');
-const avifWebpHtml = require('gulp-avif-webp-html');
+const fileInclude = require('gulp-file-include');
+const htmlClean = require('gulp-htmlclean'); //минификатор
+const avifWebpHtml = require('gulp-avif-webp-html'); //auto avif+webp <picture>
 
 //SCSS
 const sassGlob = require('gulp-sass-glob');
@@ -12,8 +17,8 @@ const sourceMaps = require('gulp-sourcemaps');
 const autoprefixer = require('gulp-autoprefixer');
 const csso = require('gulp-csso');
 const webpCss = require('gulp-webp-css');
-const avifCss = require('gulp-avif-css');
-// const mediaQueries = require('gulp-group-css-media-queries');
+const avifCss = require('gulp-avif-css'); // только добавляет классы, (автоматически не работает)
+// const mediaQueries = require('gulp-group-css-media-queries');//конфиликтует с sourcemaps
 
 //JS
 const notify = require('gulp-notify');
@@ -21,7 +26,6 @@ const webpack = require('webpack-stream');
 const babel = require('gulp-babel');
 
 //Images
-// const cached = require('gulp-cached');
 const avif = require('gulp-avif');
 const webp = require('gulp-webp');
 const imagemin = require('gulp-imagemin');
@@ -31,15 +35,9 @@ const svgSprite = require('gulp-svg-sprite');
 const fonter = require('gulp-fonter');
 const ttf2woff2 = require('gulp-ttf2woff2');
 
-const fs = require('fs');
-const clean = require('gulp-clean');
-const plumber = require('gulp-plumber');
-const changed = require('gulp-changed');
-const server = require('gulp-server-livereload');
-
 // =============================================================== Const =====================================================================
 
-const htmlIncludeSettings = { prefix: '@@', basepath: '@file' };
+const fileIncludeSettings = { prefix: '@@', basepath: '@file' };
 
 const plumberConfig = (title) => {
 	return {
@@ -59,7 +57,6 @@ function cleanDocs() {
 		return src('./docs/', { read: false }).pipe(clean({ force: true }));
 	}
 }
-exports.cleanDocs = cleanDocs;
 
 // ============================================================= HTML ================================================================
 
@@ -67,14 +64,14 @@ function htmlIncludeDocs() {
 	return src(['./src/html/**/*.html', '!./src/html/blocks/*.html'])
 		.pipe(changed('./docs/'))
 		.pipe(plumber(plumberConfig('Html')))
-		.pipe(htmlInclude(htmlIncludeSettings))
+		.pipe(fileInclude(fileIncludeSettings))
 		.pipe(avifWebpHtml())
 		.pipe(htmlClean())
 		.pipe(dest('./docs/'));
 }
-exports.htmlIncludeDocs = htmlIncludeDocs;
 
 // ============================================================ SCSS ================================================================
+
 function scssDocs() {
 	return (
 		src('./src/scss/*.scss')
@@ -92,7 +89,7 @@ function scssDocs() {
 			.pipe(dest('./docs/css/'))
 	);
 }
-exports.scssDocs = scssDocs;
+
 // ========================================================== Images ==================================================================
 
 function imagesDocs() {
@@ -113,7 +110,6 @@ function imagesDocs() {
 			.pipe(dest('./docs/img/'))
 	);
 }
-exports.imagesDocs = imagesDocs;
 
 function spriteDocs() {
 	return src('./src/img/**/*.svg')
@@ -124,15 +120,15 @@ function spriteDocs() {
 					stack: {
 						sprite: '../sprite.svg',
 						example: false, //отвечает за создания папки stack с вложенным в нее файлом sprite.stack.html , где есть примеры применения конкрентного файла из спрайта
-					}, 
+					},
 				},
 			}),
 		)
 		.pipe(dest('./docs/img/'));
 }
-exports.spriteDocs = spriteDocs;
 
 // ========================================================== Fonts ==================================================================
+
 function fontsDocs() {
 	return (
 		src('./src/fonts/**/*')
@@ -150,14 +146,12 @@ function fontsDocs() {
 	);
 }
 
-exports.fontsDocs = fontsDocs;
-
 // ========================================================== CopyFiles ==================================================================
 
 function copyFilesDocs() {
 	return src('./src/files/**/*').pipe(changed('./docs/files')).pipe(dest('./docs/files'));
 }
-exports.copyFilesDocs = copyFilesDocs;
+
 // ============================================================== JS ===================================================================
 
 function jsDocs() {
@@ -168,7 +162,7 @@ function jsDocs() {
 		.pipe(webpack(require('./../webpack.config.js')))
 		.pipe(dest('./docs/js'));
 }
-exports.jsDocs = jsDocs;
+
 // =========================================================== Server ============================================================
 
 function startServerDocs() {
@@ -179,6 +173,15 @@ function startServerDocs() {
 		}),
 	);
 }
-exports.startServerDocs = startServerDocs;
 
 // =========================================================================================================================
+
+exports.cleanDocs = cleanDocs;
+exports.htmlIncludeDocs = htmlIncludeDocs;
+exports.scssDocs = scssDocs;
+exports.imagesDocs = imagesDocs;
+exports.spriteDocs = spriteDocs;
+exports.fontsDocs = fontsDocs;
+exports.copyFilesDocs = copyFilesDocs;
+exports.jsDocs = jsDocs;
+exports.startServerDocs = startServerDocs;
