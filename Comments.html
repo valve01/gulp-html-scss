@@ -1,0 +1,637 @@
+==============================================================================================================================================================
+Сборка Gulp 4 для верстки ----------------------------------------------------------------------
+
+Gulp работает на NodeJS, так что надо ее установить
+Интерфейс командной строки для gulp npm i --global gulp-cli
+----------------------------------------------------------------------
+How to add gulp to reactjs?
+
+When you create a project with create-react-app you already have a system that does this for you. It's called
+react-scripts and it does babel and bundling for you. Instead of using a watch task you'll run npm start and all the
+babeling and bundling is done for you behind the scenes. When you want to deploy your code you use npm run build to
+create the final files.
+
+I would suggest you don't run babel, don't do any bundling and don't run watch tasks when you integrate Gulp with React.
+This is already being done by react-scripts. You can use Gulp for simple stuff like compressing images instead.
+
+---------------------------------------------------------------------- Команда для установки всех
+пакетов: npm i gulp gulp-sass sass gulp-file-include gulp-clean gulp-server-livereload
+gulp-sourcemaps gulp-plumber gulp-notify gulp-group-css-media-queries --save-dev Описание пакетов:
+gulp - собственно Gulp gulp-sass - Сборка SASS / SCSS sass - Необходим для сборки SASS / SCSS
+gulp-file-include - Подключение файлов друг в друга. HTML include gulp-clean - Удаление файлов
+gulp-server-livereload - Сервер с автообновлением страницы gulp-sourcemaps - Исходные карты для CSS
+gulp-plumber - Фикс ошибок при сборке gulp-notify - Нотификации gulp-group-css-media-queries -
+Группировка CSS медиа запросов
+---------------------------------------------------------------------- создаем файл gulpfile.js в
+нем будем писать таски ----------------------------------------------------------------------
+достаем gulp
+<!-- const gulp = require ('gulp') -->
+---------------------------------------------------------------------- пишем таски. синтаксис.
+вызываем у gulp функцию task она принимает 2 аргумента: 1 - название таска в виде строки (hello) 2 -
+функция, которая будет запускаться при вызове этой таски
+
+<!-- gulp.task('hello', function () {
+	console.log('hello gulp');
+}); -->
+
+для вызова таски в консоли пишем npx gulp hello (где hello - название таски (может быть любое))
+Чтобы подать сигнал о завершении работы такса галпу, нужно запустить колбэк фукцию, которую нужно
+передать в нашу исполняющую функцию, принято называть ее done()
+
+<!-- gulp.task('hello', function (done) {
+	console.log('hello gulp');
+	done()
+}); -->
+
+<!-- gulp.task('fuck', function (done) {
+	console.log('fuck you gulp');
+	done()
+}); -->
+
+Создаем таск, который будет запускаться по команде npx gulp (по умолчанию). Даем ему имя default. Он
+будет запускать серию тасков. Для этого используем его метод series и перечисляем уже прописанные
+где-то таски через , .
+
+<!-- 
+gulp.task("default", gulp.series("hello","fuck"))
+ -->
+
+Чтобы добавлять пакеты через require нужно указыать их имя как package-json
+----------------------------------------------------------------------gulp-file-include-------------------------------------------------
+Пишем таску для gulp-file-include. 1 Для этого в теле исполняемой функции вызываем gulp, в его метод
+src передаем путь (относительно gulpfile.js) к html файлам (или маску к группе файлов), в которые
+нужно заинклюдить другие файлы 2 В метод pipe передаем функцию из пакета gulp-file-include , которая
+собственно обрабатывает файлы. Она принимает в себя настройки в виде объекта { prefix: префикс типа
+строка, обозначающий, что сейчас будет написан include; basepath: относительно чего будет указан
+путь к файлам, которые нужно заинклюдить ('@file': include file relative to the dir in which file
+resides (example) '@root': include file relative to the dir in which gulp is running path/to/dir:
+include file relative to the basepath you provide)
+(подробнее)(https://www.npmjs.com/package/gulp-file-include) } 3 Внутри pipe вызываем метод
+gulp.dest() и передаем в него путь к объединенным вновь созданным файлам.
+
+<!-- const fileInclude = require('gulp-file-include');
+
+const fileincludeSettings = { prefix: '@@', basepath: '@file' };
+
+gulp.task('fileinclude', function (done) {
+	gulp
+	.src('./src/*.html')
+	.pipe(fileInclude(fileincludeSettings))
+	.pipe(gulp.dest('./dist/'));
+	done()
+}); -->
+
+Вместо done() можно использовать return на методы, создающие поток: такие как gulp.src и pipe
+
+<!-- 
+	gulp.task('fileinclude', function () {
+	return gulp.src('./src/*.html').pipe(fileInclude(fileincludeSettings)).pipe(gulp.dest('./dist/'));
+});
+ -->
+
+----------------------------------------------------------------------gulp-sass---------------------------------------------------------------------
+1. Достаем gulp-sass, сразу его вызываем и передаем ему то что содержится в библиотеке sass. 2. В
+gulp.src указываем путь ко всем файлам scss, которые нужно соединить в единый main.css
+
+<!-- 
+const scss = require("gulp-sass")(require("sass"))
+
+gulp.task ("sass", function(done){
+	gulp
+	.src("./src/scss/*.scss")
+	.pipe(scss())
+	.pipe(gulp.dest("./dist/css"))
+	done()
+})
+ -->
+
+можно в scss() передать объект с настройками {outputStyle:"compressed"} чтобы минифицировать выходной файл (вместо
+использования csso)
+
+------------------------------------------------------------------ Копирование из src в
+dist-------------------------------------------------------------------- /**/* - означает все
+вложенные папки любого уровня вложенности и файлы с любыми расширениями - короче вообще всё
+
+<!-- gulp.task ("copy-files",function(done){
+	gulp
+	.src("./src/img/**/*")
+	.pipe(gulp.dest("./dist/img"))
+	done()
+}) -->
+
+Для сохранения структуры папок для выходных файлов, как у входных можно указать настройку base с указанием папки с
+исходниками, но тогда в dest просто указываем выходную папку(dist) Особеено актуально когда много разных файлов из
+разных папок.
+<!-- gulp.task ("copy-files",function(done){
+	gulp
+	.src("./src/img/**/*", {base: 'src'})
+	.pipe(gulp.dest("dist"))
+	done()
+}) -->
+
+-------------------------------------------------------------------gulp-server-livereload
+---------------------------------------------------------------------- Лайвсервер для gulp 1 В
+gulp.src указываем путь к скомпилированным файлам (к корню проекта (папка dist)) 2 В функцию server
+передаем объект с настройками { livereload: чтобы перезагружался при внесении изменений, open: чтобы
+при запуске сразу отрывал браузер }
+
+<!-- 
+const server = require('gulp-server-livereload');
+
+gulp.task('startServer', function () {
+	return gulp.src('./dist/').pipe(
+		server({
+			livereload: true,
+			open: true,
+		}),
+	);
+});
+ -->
+
+----------------------------------------------------------------------gulp-clean
+---------------------------------------------------------------------- Удаление папки dist 1.
+достаем File System, чтобы иметь возможность проверить существование пути к папке dist. Метод
+existSync. 2. gulp-clean Достаем 3. подаем на вход путь к папке dist и вызываем функцию gulp-clean
+(у нас это clear) 4. Чтобы не было ошибки, при попытке удалить dist, если dist при этом уже
+отсутствует делаем проверку if (fs.existsSync('./dist/')), и если dist есть , то он будет удален и
+будет возвращен поток, если dist уже отсутствует, то gulp-clean не будет запущен и просто вернется
+done() 5. Для ускорения работы вторым аргументом для gulp.src можно передать объект с настройками {
+read: false }, с ним gulp-clean не будет читать файлы, а просто брать чтобы удалить 6. чтобы в
+процессе удаления система не спрашивала разрешения на удаление никаких файлов в clean передаем
+первым параметром объект с настроками { force: true } (типа форсированное удаление активировано )
+
+<!-- 
+const fs = require('fs');
+
+const clean = require('gulp-clean');
+
+gulp.task('clear', function (done) {
+	if (fs.existsSync('./dist/')) {
+		return gulp.src('./dist/', { read: false }).pipe(clean({ force: true }));
+	}
+	done();
+});
+ -->
+
+----------------------------------------------------------------------gulp.watch----------------------------------------------------------------------
+Навешиваем слежение за изменением исходных файлов gulp.watch принимает 2 параметра 1. путь к файлу
+или маска пути к группе файлов 2. функция, которая запускает таски (это gulp.parralel и
+gulp.series)(соответственно параллельный и последовательный запуск тасок)
+<!-- 
+gulp.task('watch', function () {
+	gulp.watch('./src/scss/**/*.scss', gulp.parallel('sass'));
+	gulp.watch('./src/**/*.html', gulp.parallel('fileinclude'));
+	gulp.watch('./src/img/**/*', gulp.parallel('copy-files'));
+});
+ -->
+
+---------------------------------------------------------------------- gulp default
+---------------------------------------------------------------------- команда npx gulp запускает
+таску default в default описываем последовательность запуска ранее созданных тасок (таск для запуска
+тасок) функция, которая запускает таски (это gulp.parralel и gulp.series)(соответственно
+параллельный и последовательный запуск тасок) принимает в себя в качестве параметров таски также в
+виде строки через запятую
+
+<!-- 
+gulp.task(
+	'default',
+	gulp.series(
+		'clear',
+		gulp.parallel('sass', 'fileinclude', 'copy-files'),
+		gulp.parallel('startServer', 'watch'),
+	),
+);
+ -->
+
+------------------------------------------------------------------gulp-sourcemaps--------------------------------------------------------------------------
+Модифицируем таск scss, добавляем соурсмапы 1. Добавляем после указания пути к исходным файлам
+инициализацию функции сорсмап.pipe(sourceMaps.init()) 2. Добавляем .pipe(sourceMaps.write()) перед
+помещением css файла в dist , чтобы сорсмап записался в конечный файл
+<!-- 
+	const scss = require('gulp-sass')(require('sass'));
+const sourceMaps = require('gulp-sourcemaps');
+
+gulp.task('sass', function () {
+	return gulp
+		.src('./src/scss/*.scss')
+		.pipe(sourceMaps.init())
+		.pipe(scss())
+		.pipe(sourceMaps.write())
+		.pipe(gulp.dest('./dist/css'));
+});
+ -->
+
+------------------------------------------------------------------gulp-group-css-media-queries-----------------------------------------------------------------
+Группирует медиазапросы в конечном css файле, но при этом ломает плагин gulp-sourcemaps Просто
+реквайрим его и добавляем через pipe после срабатывания gulp-sass плагина
+
+<!-- 
+	const scss = require('gulp-sass')(require('sass'));
+const sourceMaps = require('gulp-sourcemaps');
+ const mediaQueries = require('gulp-group-css-media-queries');
+
+gulp.task('sass', function () {
+	return gulp
+		.src('./src/scss/*.scss')
+		.pipe(sourceMaps.init())
+		.pipe(scss())
+		.pipe(mediaQueries())
+		.pipe(sourceMaps.write())
+		.pipe(gulp.dest('./dist/css'));
+});
+ -->
+
+------------------------------------------------------------------ gulp-plumber +
+gulp-notify-------------------------------------------------------------- gulp-plumber - позволяет
+избежать зависания приложения при ошибках gulp-notify - выдает ошибки во всплывающем окне, чтобы мы
+видели откуда они пришли, т.к. приложение будет работать и без gulp-notify можно подумать что ошибок
+нет реквайрим plumber и notify plumber вызываем после указания пути к исходным файлам и передаем в
+него объект с настройками , в свойство errorHandler записываем значение вызова функции
+notify.onError в которую в свою очередь передаем настройки уже для нее.
+<!-- 
+const plumber = require('gulp-plumber');
+const notify = require('gulp-notify');
+
+const plumberScssConfig = {
+	errorHandler: notify.onError({
+		title: 'Styles', // место откуда пришла ошибка
+		message: 'Error <%= error.message %>',// шаблон для текста ошибки (из документации notify)
+		sound: false, //отключение звукового оповещения
+	}),
+};
+
+gulp.task('sass', function () {
+	return (
+		gulp
+			.src('./src/scss/*.scss')
+			.pipe(plumber(plumberScssConfig))
+			.pipe(sourceMaps.init())
+			.pipe(scss())
+			// .pipe(mediaQueries())
+			.pipe(sourceMaps.write())
+			.pipe(gulp.dest('./dist/css'))
+	);
+});
+
+ -->
+
+То же самое можно сделать для других типов файлов Например html:
+
+<!-- 
+	const plumberHtmlConfig = {
+	errorHandler: notify.onError({
+		title: 'Html', // место откуда пришла ошибка
+		message: 'Error <%= error.message %>',// шаблон из документации notify
+		sound: false,
+	}),
+};
+
+gulp.task('fileinclude', function () {
+	return gulp
+	.src('./src/*.html')
+	.pipe(plumber(plumberHtmlConfig))
+	.pipe(fileInclude(fileincludeSettings))
+	.pipe(gulp.dest('./dist/'));
+});
+ -->
+
+------------------------------------------------------------------gitignore-----------------------------------------------------------------
+Проект всегда передается без папки node_modules, а для того чтобы он заработал как надо на другом пк
+- вводится команда npm i , она берет все зависимости из package.json и потом скачивает и подключает
+все нужные пакеты сама. Чтобы папка не попадала в Git нужно добавить ее в gitignore 1. Создаем
+пустой файл с названием .gitignore 2. Просто пишем название папки 3. Все! Эта папка не будет теперь
+попадать в Git
+----------------------------------------------------------------------webpack----------------------------------------------------------------------
+Установка webpack+лоадеры: npm i webpack-stream style-loader css-loader --save-dev - JS таск -
+webpack конфиг - пример файлов с модулями подключение
+<!-- const webpack = require('webpack-stream'); -->
+
+- JS таск
+<!-- 
+
+gulp.task('js', function () {
+	return gulp
+		.src('./js/*.js')
+		.pipe(plumber(plumberConfig('JS')))
+		.pipe(webpack(require('./webpack.config.js')))
+		.pipe(gulp.dest('./dist/js'));
+});
+
+ -->
+- webpack конфиг
+<!-- 
+	const config = {
+	mode: 'production',
+	entry: {
+		index: './src/js/index.js',
+		// contacts: './src/js/contacts.js',
+	},
+	output: {
+		filename: '[name].bundle.js',
+	},
+	module: {
+		rules: [
+			{
+				test: /\.css$/,
+				use: ['style-loader', 'css-loader'],
+			},
+		],
+	},
+};
+
+module.exports = config;
+
+ -->
+!ВАЖНО! Указываем теперь в index.html в пути к скриптам - index.bundle.js, т.к. согласно конфигу
+вебпака файл будет называться именно так.
+----------------------------------------------------------------------datepicker-календарик---------------------------------------------------------------------
+календарик классный Пример с datepicker: npm i air-datepicker -S JS: import AirDatepicker from
+'air-datepicker'; import 'air-datepicker/air-datepicker.css';
+document.addEventListener('DOMContentLoaded', () => { new AirDatepicker('#my-element'); }); HTML:
+<!-- <input type="text" id="my-element"> -->
+
+--------------------------------------------------------Сборка скриптов. webpack,
+babel---------------------------------------------------------------------- Сборка скриптов.
+webpack, babel Установка babel: npm i gulp-babel @babel/core @babel/preset-env --save-dev - JS таск
+- Настройки package-json Подключаем babel после plumber
+
+<!-- 
+	gulp.task('js', function () {
+	return gulp
+		.src('./js/*.js')
+		.pipe(plumber(plumberConfig('JS')))
+		.pipe(babel())
+		.pipe(webpack(require('./webpack.config.js')))
+		.pipe(gulp.dest('./dist/js'));
+});
+ -->
+
+---------------------------------------------------------------------- gulp-imagemin
+---------------------------------------------------------------------- Сжимает картинки npm i
+gulp-imagemin@7 --save-dev
+<!-- у нас подключения на common js, а более поздние версии дружат только с подключением по ES6 (через import) -->
+
+.pipe(imagemin({ verbose: true }))
+
+<!-- 
+const imagemin = require('gulp-imagemin');
+
+gulp.task('copy-images', function () {
+	return gulp
+		.src('./src/img/**/*')
+		.pipe(imagemin({ verbose: true }))// настройка включает отображение в консоли какие файлы были оптимизированы и сколько места сэкономлено
+		.pipe(gulp.dest('./dist/img'));
+});
+
+
+ -->
+
+---------------------------------------------------------------------- Ускорение сборки npm i Пакет,
+который следит за тем какие файлы не изменялись, чтобы таска не обрабатывала их повторно (работает
+только тогда, когда сервер ужу запущен) npm i gulp-changed --save-dev - использование в картинках,
+HTML, JS, CSS, шрифтах, файлах Подключаем
+<!-- const changed = require("gulp-changed") -->
+
+!ВАЖНО!
+.pipe(changed('./dist/img/', { hasChanged: changed.compareContents }))// Настройка нужна, чтобы при изменении файлов,
+подключенных к index.html сам index.html также пересобирался и соответственно server обновлялся
+
+
+Добавление в таску для картинок
+<!-- 
+	gulp.task('copy-images', function () {
+	return gulp
+		.src('./src/img/**/*')
+		.pipe(changed('./dist/img/', { hasChanged: changed.compareContents }))// Настройка нужна, чтобы при изменении файлов, подключенных к index.html сам index.html также пересобирался
+		.pipe(imagemin({ verbose: true }))// настройка включает отображение в консоли какие файлы были оптимизированы и сколько места сэкономлено
+		.pipe(gulp.dest('./dist/img/'));
+});
+ -->
+
+используем его в картинках, HTML, JS, CSS, шрифтах, файлах
+--------------------------------------------------------- пути, исключение путей, разные директории
+для путей---------------------------------------------- Если мы собираем в какую-то папку файлы из
+разных директорий - указываем к ним путь в виде массива путей Если мы хотим исключить какую-то
+директорию из попадания в dist внутри кавычек перед путем ставим !
+
+<!-- 
+			.src(['./src/html/**/*.html','!./src/html/blocks/*.html'])
+ -->
+
+<!-- 
+	gulp.task('fileinclude', function () {
+	return gulp
+		.src(['./src/html/**/*.html','!./src/html/blocks/*.html'])
+		.pipe(changed('./dist/'))
+		.pipe(plumber(plumberConfig('Html')))
+		.pipe(fileInclude(fileincludeSettings))
+		.pipe(gulp.dest('./dist/'));
+});
+ -->
+
+---------------------------------------------------------------------gulp-sass-glob---------------------------------------------------------------------
+gulp-sass-glob дает возможноть использовать глобальные импорыты (это те, которые с ** или * в пути),
+без него они не работают. !ВАЖНО! Не считывает импорты внутри импортированных файлов. Поэтому все
+импорты далаем только в главном файле (например main.scss) Теперь мы можем создавать в папке blocks
+новые scss файлы и они будут подключаться автоматически в main В main.scss теперь
+<!-- 
+	@import "./blocks/**/*.scss";
+ -->
+gulpfile.js
+<!-- 
+
+const sassGlob = require('gulp-sass-glob');
+
+gulp.task('sass', function () {
+	return (
+		gulp
+			.src('./src/scss/*.scss')
+			.pipe(changed('./dist/css/'))
+			.pipe(plumber(plumberConfig('Styles')))
+			.pipe(sourceMaps.init())
+			.pipe(sassGlob())
+			.pipe(scss())
+			// .pipe(mediaQueries())
+			.pipe(sourceMaps.write())
+			.pipe(gulp.dest('./dist/css/'))
+	);
+});
+ -->
+
+----------------------------------------------------------------------require-------------------------------------------------------------
+!ВАЖНО! Когда мы делаем require из своих файлов, то путь нужно обязательно указывать относительно
+того файла где мы этот require делаем, даже если мы этот файл потом куда-то подключаем Таск default
+должна запускаться именно в файле gulpfile.js. При этом в нем обязательно должен быть зареквайрен
+сам gulp:
+<!-- 
+	const gulp = require ("gulp")
+ -->
+
+GitHub по умолчанию запускает gitHubPages из папки docs
+----------------------------------------------------------------------gulp-autoprefixer-------------------------------------------------------------
+npm install --save-dev gulp-autoprefixer // не срабатывет не может прочитать нужен postcss-scss
+parser (такая ошибка вылазит если будет комментарий в scss) запускаем после .pipe(scss()) и перед
+.pipe(sourceMaps.write())
+
+<!-- 
+const autoprefixer = require('gulp-autoprefixer');
+
+gulp.task('sass:docs', function () {
+	return (
+		gulp
+			.src('./src/scss/*.scss')
+			.pipe(changed('./docs/css/'))
+			.pipe(plumber(plumberConfig('Styles')))
+			.pipe(sourceMaps.init())
+			.pipe(sassGlob())
+			.pipe(scss())
+			.pipe(autoprefixer())// не срабатывет не может прочитать нужен postcss-scss parser (такая ошибка вылазит если будет комментарий в scss)
+			// .pipe(mediaQueries())
+			.pipe(sourceMaps.write())
+			.pipe(gulp.dest('./docs/css/'))
+	);
+});
+ -->
+Чтобы передать в autoprefixer браузеры, в которых нужно осуществлять поддерку, можно передать объект
+в autoprefixer(), но лучше в package-json добавить настройку browserslist, подробнее на
+gulp-autoprefixer npm
+<!-- 
+		"browserslist": [
+		"last 10 version"
+	]
+ -->
+
+---------------------------------------------------------------------- gulp-csso
+---------------------------------------------------------------------- npm i -D gulp-csso
+Минификатор css файлов Вызываем его в таске sass, после срабатывания gulp-sass
+<!-- 
+const scss = require('gulp-sass')(require('sass'));
+const sourceMaps = require('gulp-sourcemaps');
+
+	gulp.task('sass:docs', function () {
+	return (
+		gulp
+			.src('./src/scss/*.scss')
+			.pipe(changed('./docs/css/'))
+			.pipe(plumber(plumberConfig('Styles')))
+			.pipe(sourceMaps.init())
+			.pipe(autoprefixer()) // не срабатывет не может прочитать нужен postcss-scss parser (такая ошибка вылазит если будет комментарий в scss)
+			.pipe(sassGlob())
+			.pipe(scss())
+			.pipe(csso())
+			// .pipe(mediaQueries())
+			.pipe(sourceMaps.write())
+			.pipe(gulp.dest('./docs/css/'))
+	);
+});
+ -->
+
+----------------------------------------------------------------------gulp-htmlclean-------------------------------------------------------------
+npm i -D gulp-htmlclean Минификатор для Html файлов вызывается перед .pipe(gulp.dest('./docs/'));
+
+<!-- 
+	const htmlInclude = require('gulp-file-include');
+
+const htmlIncludeSettings = { prefix: '@@', basepath: '@file' };
+
+gulp.task('htmlInclude:docs', function () {
+	return gulp
+		.src(['./src/html/**/*.html', '!./src/html/blocks/*.html'])
+		.pipe(changed('./docs/'))
+		.pipe(plumber(plumberConfig('Html')))
+		.pipe(htmlInclude(htmlIncludeSettings))
+		.pipe(htmlClean())
+		.pipe(gulp.dest('./docs/'));
+});
+ -->
+
+потребуется удалить старые html файлы в docs, иначе новые могут не заменят старые, но если мы
+вызываем все таски, мы итак docs удаляем
+----------------------------------------------------------------------gulp-webp-------------------------------------------------------------
+npm i gulp-webp gulp-webp-html gulp-webp-css --save-dev gulp-webp - конвертирует изображения в .webp
+формат Мы сделали, чтобы у нас в docs/img попадали изображения в исходном + webp форматах Получается
+так: мы даем доступ к исходным файлам проверяем их на изменения (ищем среди них те, которых нет в
+docs/img) Эти новые изображения конвертируем в формат webp засовываем новые изображения в docs/img
+Отдельно выполняется задача по ужиманию исходных изображений (старая задача) но нельзя 2 раза
+прописать .src('./src/img/**/*'), для таких случаев используют .pipe(gulp.src('./src/img/**/*'))\
+
+<!-- 
+	gulp.task('copy-images:docs', function () {
+	return gulp
+		.src('./src/img/**/*')
+		.pipe(changed('./docs/img/'))
+		.pipe(webp())
+		.pipe(gulp.dest('./docs/img/'))
+
+		.pipe(gulp.src('./src/img/**/*'))
+		.pipe(changed('./docs/img/'))
+		.pipe(imagemin({ verbose: true }))
+		.pipe(gulp.dest('./docs/img/'));
+});
+ -->
+
+у gulp-webp есть еще разные настройки, в том числе выбор качетва.
+----------------------------------------------------------gulp-webp-html----------------------------------------------------------
+пакет автоматически оборачивает тэги img c картинками в тэг picture, со всеми необходимыми
+атрибутами и добавляет в разметку внутри этого же тэга picture копию этой картинки, но для формата
+.webp, которую уже должен был положить в папку с картинками gulp-webp. !ВАЖНО! В названиях имен
+картинок не должно быть пробелов. А расширение должно быть с маленькой буквы. Тег img должен быть
+прописан в 1 строчку, иначе gulp-webp-html не может его считать, чтобы автоматом подключить, поэтому
+Prettier в HTML файлах мы отключили в настройках VS Code !ВАЖНО! Вызываем его в таске
+htmlInclude:docs после работы htmlInclude
+<!-- 
+	gulp.task('htmlInclude:docs', function () {
+	return gulp
+		.src(['./src/html/**/*.html', '!./src/html/blocks/*.html'])
+		.pipe(changed('./docs/'))
+		.pipe(plumber(plumberConfig('Html')))
+		.pipe(htmlInclude(htmlIncludeSettings))
+		.pipe(webpHtml())
+		.pipe(htmlClean())
+		.pipe(gulp.dest('./docs/'));
+});
+ -->
+-----------------------------------------------------gulp-webp-css-----------------------------------------------------
+для картинок внутри scss (для background-image и не только) пакет автоматически добавляет копию css
+свойства, где для картинки приоритет для браузеров, которые подерживают webp - картинка в формате
+webp , которую уже должен был положить в папку с картинками gulp-webp. Вот такое добавляет
+<!-- 
+	@supports (-webkit-appearance: none) {
+	body {
+		background-image: url(./../img/DSC_0714.webp);
+	}
+  -->
+
+Запускаем перед gulp-sass
+
+<!-- 
+	gulp.task('sass:docs', function () {
+	return (
+		gulp
+			.src('./src/scss/*.scss')
+			.pipe(changed('./docs/css/'))
+			.pipe(plumber(plumberConfig('Styles')))
+			.pipe(sourceMaps.init())
+			.pipe(autoprefixer()) // не срабатывет не может прочитать нужен postcss-scss parser (такая ошибка вылазит если будет комментарий в scss)
+			.pipe(sassGlob())
+			.pipe(webpCss())
+			.pipe(scss())
+			.pipe(csso())
+			// .pipe(mediaQueries())
+			.pipe(sourceMaps.write())
+			.pipe(gulp.dest('./docs/css/'))
+	);
+});
+  -->
+
+exports.imagesDocs = imagesDocs; подобную конструкцию пишем, чтобы можно было вызвать эту таску через консоль или в
+составе других тасок через консоль
+
+-----------------------------------------------------gulp-svg-sprite-----------------------------------------------------
+-----------------------------------------------------gulp-fonter-----------------------------------------------------
+npm i -D gulp-fonter gulp-ttf2woff2
+
+gulp-fonter - конвертирует любой шрифт в другие шрифты (в том числе в woff) (["ttf", "otf", "eot", "woff", "svg"])
+gulp-ttf2woff2 - только ttf в woff2
+
+1:07
