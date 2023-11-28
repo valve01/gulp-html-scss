@@ -3,12 +3,13 @@ const fs = require('fs');
 const clean = require('gulp-clean');
 const plumber = require('gulp-plumber');
 const changed = require('gulp-changed');
-const server = require('gulp-server-livereload');
+// const server = require('gulp-server-livereload');
+const ghPages = require('gulp-gh-pages');
 
 //HTML
 const fileInclude = require('gulp-file-include');
 const htmlClean = require('gulp-htmlclean'); //минификатор
-const avifWebpHtml = require('gulp-avif-webp-html'); //auto avif+webp <picture>
+// const avifWebpHtml = require('gulp-avif-webp-html'); //auto avif+webp <picture>
 
 //SCSS
 const sassGlob = require('gulp-sass-glob');
@@ -52,22 +53,32 @@ const plumberConfig = (title) => {
 // ============================================================ Tasks ================================================================
 // ============================================================ Clean ===============================================================
 
-function cleanDocs() {
+function cleanDocs(done) {
 	if (fs.existsSync('./docs/')) {
 		return src('./docs/', { read: false }).pipe(clean({ force: true }));
 	}
+	done();
+}
+
+function cleanPublish(done) {
+	if (fs.existsSync('./.publish/')) {
+		return src('./.publish/', { read: false }).pipe(clean({ force: true }));
+	}
+	done();
 }
 
 // ============================================================= HTML ================================================================
 
 function htmlIncludeDocs() {
-	return src(['./src/html/**/*.html', '!./src/html/blocks/*.html'])
-		.pipe(changed('./docs/'))
-		.pipe(plumber(plumberConfig('Html')))
-		.pipe(fileInclude(fileIncludeSettings))
-		.pipe(avifWebpHtml())
-		.pipe(htmlClean())
-		.pipe(dest('./docs/'));
+	return (
+		src(['./src/html/**/*.html', '!./src/html/blocks/*.html'])
+			.pipe(changed('./docs/'))
+			.pipe(plumber(plumberConfig('Html')))
+			.pipe(fileInclude(fileIncludeSettings))
+			// .pipe(avifWebpHtml())
+			.pipe(htmlClean())
+			.pipe(dest('./docs/'))
+	);
 }
 
 // ============================================================ SCSS ================================================================
@@ -91,20 +102,23 @@ function scssDocs() {
 }
 
 // ========================================================== Images ==================================================================
-
+// Временно отключаю, чтобы долго не ждать сборку, если нужно просто проверить работу на сервере 
 function imagesDocs() {
 	return (
-		src(['./src/img/**/*', '!./src/img/**/*.svg'])
-			.pipe(changed('./docs/img/'))
-			.pipe(avif({ quality: 50 }))
+		src('./src/img/**/*.{png,jpg,jpeg}')
+			// .pipe(changed('./docs/img/'))// Временно отключаю
+			// .pipe(avif())// Временно отключаю
 			.pipe(dest('./docs/img/'))
+
 			// Два раза обращаемся к /img/
-			.pipe(src(['./src/img/**/*', '!./src/img/**/*.svg']))
-			.pipe(changed('./docs/img/'))
-			.pipe(webp())
-			.pipe(dest('./docs/img/'))
+
+			// .pipe(src(['./src/img/**/*', '!./src/img/**/*.svg']))// Временно отключаю
+			// .pipe(changed('./docs/img/'))// Временно отключаю
+			// .pipe(webp())// Временно отключаю
+			// .pipe(dest('./docs/img/'))// Временно отключаю
+
 			// Третий раза обращаемся к /img/
-			.pipe(src(['./src/img/**/*', '!./src/img/**/*.svg']))
+			.pipe(src(['./src/img/**/*', '!./src/img/**/*.svg', './src/img/logo.svg']))
 			.pipe(changed('./docs/img/'))
 			.pipe(imagemin({ verbose: true }))
 			.pipe(dest('./docs/img/'))
@@ -112,14 +126,19 @@ function imagesDocs() {
 }
 
 function spriteDocs() {
-	return src('./src/img/**/*.svg')
+	return src(['./src/img/**/*.svg'])
 		.pipe(changed('./docs/img/'))
 		.pipe(
 			svgSprite({
+				shape: {
+					spacing: {
+						box: 'icon',
+					},
+				},
 				mode: {
 					stack: {
 						sprite: '../sprite.svg',
-						example: false, //отвечает за создания папки stack с вложенным в нее файлом sprite.stack.html , где есть примеры применения конкрентного файла из спрайта
+						example: true, //отвечает за создания папки stack с вложенным в нее файлом sprite.stack.html , где есть примеры применения конкрентного файла из спрайта
 					},
 				},
 			}),
@@ -164,17 +183,21 @@ function jsDocs() {
 }
 
 // =========================================================== Server ============================================================
-
-function startServerDocs() {
-	return src('./docs/').pipe(
-		server({
-			livereload: true,
-			open: true,
-		}),
-	);
-}
+// Сервер по умолчанию отключен в продакшн режиме
+// function startServerDocs() {
+// 	return src('./docs/').pipe(
+// 		server({
+// 			livereload: true,
+// 			open: true,
+// 		}),
+// 	);
+// }
 
 // =========================================================================================================================
+
+function deployGhP() {
+	return src('./docs/**/*').pipe(ghPages());
+}
 
 exports.cleanDocs = cleanDocs;
 exports.htmlIncludeDocs = htmlIncludeDocs;
@@ -184,4 +207,6 @@ exports.spriteDocs = spriteDocs;
 exports.fontsDocs = fontsDocs;
 exports.copyFilesDocs = copyFilesDocs;
 exports.jsDocs = jsDocs;
-exports.startServerDocs = startServerDocs;
+// exports.startServerDocs = startServerDocs;
+exports.deployGhP = deployGhP;
+exports.cleanPublish = cleanPublish;

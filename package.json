@@ -40,7 +40,8 @@
 		]
 	},
 	"dependencies": {
-		"air-datepicker": "^3.4.0"
+		"air-datepicker": "^3.4.0",
+		"gulp-gh-pages": "^0.5.4"
 	},
 	"browserslist": [
 		"last 10 version"

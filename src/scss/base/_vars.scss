@@ -1,20 +1,67 @@
 :root {
-	--container-width: 1200px;
+	--container-width: 1170px;
 	--container-padding: 15px;
 
-	--font-main: 'Poppins', sans-serif;
+	--font-main: 'Montserrat', sans-serif;
 	--font-accent: 'Playfair Display', serif;
 
-	--page-bg: #fff;
-	--text-color: #000;
-	--accent: #ac182c;
+	--page-bg-color: #fff;
+	--text-color: #3b3a3ac0;
+	--color-accent: #ffcc33;
+	--color-main: #006699;
+	--color-secondary: #9fcfe7;
 
-    --laptop-size: 1199px;
+	--laptop-size: 1199px;
 	--tablet-size: 959px;
 	--mobile-size: 599px;
+
+	$laptop-size: 1199px;
+	$tablet-size: 959px;
+	$mobile-size: 599px;
+
+	$tablet-font-size-common: 14px;
 }
 
 .dark {
-    --page-bg: #252526;
-    --text-color: #fff;
+	--page-bg-color: #252526;
+	--text-color: #fff;
 }
+%--shadow-main {
+	box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.2);
+}
+%--h2-title {
+	font-size: 32px;
+	color: var(--text-color);
+	margin-top: 32px;
+	font-weight: 500;
+}
+
+
+
+@media screen and (min-width: 600px) and (max-width: 959px) {
+	%--h2-title {
+		font-size: 24px;
+	}
+}
+
+@media screen and (max-width: 599px) and (min-width: 360px) {
+	%--h2-title {
+		font-size: 24px;
+		text-align: center;
+	}
+	:root {
+		--container-padding: 0;
+	}
+}
+
+@media screen and (max-width: 359px) {
+	%--h2-title {
+		font-size: 24px;
+		text-align: center;
+		margin-top: 20px;
+	}
+	:root {
+		--container-padding: 0;
+	}
+}
+

@@ -1,10 +1,242 @@
 .header {
-	background-color: rgb(195, 220, 231);
-	padding: 50px 0;
+	background-color: var(--color-main);
+	padding: 0px 0;
 
-	&__row {
+	&__first-row {
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
+		gap: 15px;
+		padding: 0 15px 0 15px;
 	}
+
+	&__menu-list {
+		display: flex;
+	}
+	&__menu-list-item {
+		padding-right: 22px;
+		&:last-child {
+			padding-right: 0;
+		}
+
+		&:hover {
+			text-shadow: 4px 4px 10px #ffffffb9;
+			transform: translate(0, -3px);
+			transition: 0, 2s;
+		}
+		&:active {
+			transform: translate(3px, 0px);
+		}
+	}
+	&__menu-link {
+		color: #fff;
+		font: {
+			weight: 600;
+			size: 24px;
+		}
+	}
+	&__menu-link--active {
+		color: var(--color-accent);
+		text-shadow: 4px 4px 10px rgba(255, 204, 51, 0.7);
+	}
+	&__container {
+		padding: 15px 0 15px 0;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+	}
+
+	&__phone-container {
+		min-width: 253px;
+		display: flex;
+		gap: 12px;
+		align-items: center;
+		color: #fff;
+		font: {
+			size: 16px;
+			weight: 600;
+		}
+	}
+}
+.contact-phones {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+.social-icons-container {
+	display: flex;
+	gap: 13px;
+	min-width: 145px;
+}
+.svg-icons {
+	&--whatsaap-icon-dims {
+		width: 48px;
+		height: 48px;
+	}
+	&--telegram-icon-dims {
+		width: 48px;
+		height: 48px;
+	}
+	&--avito-icon-dims {
+		width: 48px;
+		height: 48px;
+	}
+	&--phone-icon-dims {
+		width: 30px;
+		height: 30px;
+	}
+}
+
+.callback-btn {
+	display: flex;
+	background-color: #ffcc33;
+	border-radius: 10px;
+
+	&:hover {
+		transform: translate(0, -3px);
+		transition: translate 0.5s;
+		box-shadow: 4px 4px 10px rgba(255, 204, 51, 0.5);
+	}
+	&:active {
+		transform: translate(3px, 3px);
+		box-shadow: none;
+	}
+}
+.callback-btn__text {
+	color: var(--color-main);
+	padding: 12px;
+	font: {
+		size: 16px;
+		weight: 600;
+	}
+}
+
+@media screen and (min-width: 600px) and (max-width: 959px) {
+	.header__menu-list {
+		display: none;
+	}
+	.social-icons-container {
+		display: flex;
+		gap: 8px;
+		min-width: 80px;
+	}
+	.svg-icons {
+		&--whatsaap-icon-dims {
+			width: 36px;
+			height: 36px;
+		}
+		&--telegram-icon-dims {
+			width: 36px;
+			height: 36px;
+		}
+		&--avito-icon-dims {
+			width: 36px;
+			height: 36px;
+		}
+		&--phone-icon-dims {
+			display: none;
+		}
+	}
+	.callback-btn {
+		border-radius: 6px;
+		&__text {
+			padding: 10px;
+			font: {
+				size: 14px;
+			}
+		}
+	}
+	.header__phone-container {
+		min-width: 0;
+		font: {
+			size: 14px;
+		}
+	}
+}
+
+@media screen and (max-width: 599px) and (min-width: 360px) {
+	.header__menu-list {
+		display: none;
+	}
+	.social-icons-container {
+		display: flex;
+		gap: 8px;
+		min-width: 80px;
+	}
+	.svg-icons {
+		&--whatsaap-icon-dims {
+			width: 36px;
+			height: 36px;
+		}
+		&--telegram-icon-dims {
+			width: 36px;
+			height: 36px;
+		}
+		&--avito-icon-dims {
+			width: 36px;
+			height: 36px;
+		}
+		&--phone-icon-dims {
+			display: none;
+		}
+	}
+	.callback-btn {
+		display: none;
+	}
+
+	.header__phone-container {
+		min-width: 0;
+		font: {
+			size: 12px;
+		}
+	}
+	.phone-name {
+		display: none;
+	}
+}
+
+@media screen and (max-width: 359px) {
+	.header {
+		&__menu-list {
+			display: none;
+		}
+		&__first-row {
+			flex-wrap: wrap;
+			justify-content: space-around;
+		}
+	}
+
+	.social-icons-container {
+		display: flex;
+		gap: 8px;
+		min-width: 80px;
+	}
+	.svg-icons {
+		&--whatsaap-icon-dims {
+			width: 36px;
+			height: 36px;
+		}
+		&--telegram-icon-dims {
+			width: 36px;
+			height: 36px;
+		}
+		&--avito-icon-dims {
+			width: 36px;
+			height: 36px;
+		}
+		&--phone-icon-dims {
+			display: none;
+		}
+	}
+	.callback-btn {
+		display: none;
+	}
+
+	.header__phone-container {
+		min-width: 0;
+		font: {
+			size: 14px;
+		}
+	}
+
 }

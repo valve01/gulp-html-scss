@@ -52,7 +52,7 @@ function cleanDev(done) {
 // ============================================================= HTML ================================================================
 
 function htmlIncludeDev() {
-	return src(['./src/html/**/*.html', '!./src/html/blocks/*.html'])
+	return src(['./src/html/**/*.html', '!./src/html/blocks/**/*.html'])
 		.pipe(changed('./build/', { hasChanged: changed.compareContents })) // Настройка нужна, чтобы при изменении файлов, подключенных к index.html сам index.html также пересобирался
 		.pipe(plumber(plumberConfig('Html')))
 		.pipe(fileInclude(fileIncludeSettings))
@@ -79,7 +79,7 @@ function scssDev() {
 
 function copyImagesDev() {
 	return (
-		src(['./src/img/**/*', '!./src/img/**/*.svg'])
+		src(['./src/img/**/*', '!./src/img/**/*.svg', './src/img/logo.svg'])
 			.pipe(changed('./build/img/'))
 			// .pipe(imagemin({ verbose: true })) // настройка включает отображение в консоли какие файлы были оптимизированы и сколько места сэкономлено
 			.pipe(dest('./build/img/'))
@@ -87,10 +87,15 @@ function copyImagesDev() {
 }
 
 function spriteDev() {
-	return src('./src/img/**/*.svg')
+	return src(['./src/img/**/*.svg','!./src/img/logo.svg'])
 		.pipe(changed('./build/img/'))
 		.pipe(
 			svgSprite({
+				shape: {
+					spacing: {
+						box: 'icon',
+					},
+				},
 				mode: {
 					stack: {
 						sprite: '../sprite.svg',
